@@ -1,7 +1,7 @@
 import React from 'react';
-import DashboardLayout from '../../../layouts/DashboardLayout';
+import DashboardLayout from '../../layouts/DashboardLayout';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import '../../../components/shared.css';
+import '../../components/shared.css';
 
 const payrollData = [
     { month: 'Jan', amount: 18.4 }, { month: 'Feb', amount: 18.7 },

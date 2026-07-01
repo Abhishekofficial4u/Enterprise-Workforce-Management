@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import DashboardLayout from '../../../layouts/DashboardLayout';
-import '../../../components/shared.css';
+import DashboardLayout from '../../layouts/DashboardLayout';
+import '../../components/shared.css';
 
 const mockLeaves = [
     { id: 'LV-001', name: 'Karan Singh',  dept: 'Engineering', type: 'Casual Leave',   from: '02 Jul 2026', to: '04 Jul 2026', days: 3, reason: 'Family event',       status: 'Pending'  },

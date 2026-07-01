@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import DashboardLayout from '../../../layouts/DashboardLayout';
-import '../../../components/shared.css';
+import DashboardLayout from '../../layouts/DashboardLayout';
+import '../../components/shared.css';
 
 const today = new Date();
 const getDayLabel = offset => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import DashboardLayout from '../../layouts/DashboardLayout';
+import DashboardLayout from '../layouts/DashboardLayout';
 
 const ComingSoon = ({ title, icon, description }) => (
     <DashboardLayout title={title}>
