@@ -19,7 +19,10 @@ app.get('/api/health', (req, res) => {
 
 // Mount Routes
 const authRoutes = require('./modules/auth/auth.routes');
+const hrRoutes = require('./modules/hr/hr.routes');
+
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/hr', hrRoutes);
 
 // Start Server
 const PORT = process.env.PORT || 5000;
