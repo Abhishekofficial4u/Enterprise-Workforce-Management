@@ -1,0 +1,107 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { login } from '../api/authService';
+import './Login.css';
+
+const Login = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+        try {
+            const data = await login(email, password);
+            setSuccess(true);
+            setTimeout(() => navigate('/dashboard'), 800);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Invalid credentials. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="login-page">
+            {/* Left Info Panel */}
+            <div className="login-left">
+                <div className="login-brand">
+                    <div className="brand-icon">🏢</div>
+                    <span className="brand-name">EnterpriseWFM</span>
+                </div>
+
+                <div className="login-tagline">
+                    <h1>Manage Your Workforce Intelligently</h1>
+                    <p>
+                        A centralized platform for HR, attendance, payroll, recruitment and AI-powered workforce insights.
+                    </p>
+                </div>
+
+                <div className="login-features">
+                    <div className="feature-chip">
+                        <div className="chip-icon">🤖</div>
+                        AI-Powered HR Operations Assistant
+                    </div>
+                    <div className="feature-chip">
+                        <div className="chip-icon">📊</div>
+                        Real-Time Analytics & Reporting
+                    </div>
+                    <div className="feature-chip">
+                        <div className="chip-icon">🔐</div>
+                        Role-Based Access Control (RBAC)
+                    </div>
+                    <div className="feature-chip">
+                        <div className="chip-icon">⚡</div>
+                        Automated Payroll & Attendance
+                    </div>
+                </div>
+            </div>
+
+            {/* Right Form Panel */}
+            <div className="login-right">
+                <div className="login-form-container">
+                    <div className="login-form-header">
+                        <h2>Welcome back 👋</h2>
+                        <p>Sign in to access your workspace.</p>
+                    </div>
+
+                    {error && <div className="alert-error">⚠️ {error}</div>}
+                    {success && <div className="alert-success">✅ Login successful! Redirecting...</div>}
+
+                    <form onSubmit={handleSubmit}>
+                        <div className="form-field">
+                            <label>Email Address</label>
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="you@company.com"
+                                required
+                            />
+                        </div>
+                        <div className="form-field">
+                            <label>Password</label>
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="••••••••"
+                                required
+                            />
+                        </div>
+                        <button type="submit" className="login-submit-btn" disabled={loading}>
+                            {loading ? 'Signing in...' : 'Sign In →'}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Login;
