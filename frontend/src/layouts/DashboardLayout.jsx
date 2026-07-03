@@ -1,44 +1,71 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { getMyProfile } from '../features/employees/api/employeeService';
+import { 
+    LayoutDashboard, Users, Target, Award, 
+    CalendarCheck, Palmtree, CircleDollarSign, 
+    FolderKanban, Ticket, Laptop2, 
+    Bot, LineChart, Bell, Settings, LogOut
+} from 'lucide-react';
 import './DashboardLayout.css';
 
 const navItems = [
-    { section: 'Overview', items: [
-        { label: 'Dashboard', icon: '📊', path: '/dashboard' },
+    { section: 'Overview', allowedRoles: ['ALL'], items: [
+        { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
     ]},
-    { section: 'HR Management', items: [
-        { label: 'Employees', icon: '👥', path: '/dashboard/employees' },
-        { label: 'Recruitment', icon: '🎯', path: '/dashboard/recruitment' },
-        { label: 'Performance', icon: '🏆', path: '/dashboard/performance' },
+    { section: 'HR Management', allowedRoles: ['HR_MANAGER', 'SUPER_ADMIN'], items: [
+        { label: 'Employees', icon: Users, path: '/dashboard/employees' },
+        { label: 'Recruitment', icon: Target, path: '/dashboard/recruitment' },
+        { label: 'Performance', icon: Award, path: '/dashboard/performance' },
     ]},
-    { section: 'Operations', items: [
-        { label: 'Attendance', icon: '📅', path: '/dashboard/attendance' },
-        { label: 'Leave', icon: '🌴', path: '/dashboard/leave' },
-        { label: 'Payroll', icon: '💰', path: '/dashboard/payroll' },
+    { section: 'Operations', allowedRoles: ['ALL'], items: [
+        { label: 'Attendance', icon: CalendarCheck, path: '/dashboard/attendance' },
+        { label: 'Leave', icon: Palmtree, path: '/dashboard/leave' },
+        { label: 'Payroll', icon: CircleDollarSign, path: '/dashboard/payroll' },
     ]},
-    { section: 'Workspace', items: [
-        { label: 'Projects', icon: '🗂️', path: '/dashboard/projects' },
-        { label: 'Help Desk', icon: '🎫', path: '/dashboard/helpdesk' },
-        { label: 'Assets', icon: '💻', path: '/dashboard/assets' },
+    { section: 'Workspace', allowedRoles: ['ALL'], items: [
+        { label: 'Projects', icon: FolderKanban, path: '/dashboard/projects' },
+        { label: 'Help Desk', icon: Ticket, path: '/dashboard/helpdesk' },
+        { label: 'Assets', icon: Laptop2, path: '/dashboard/assets', overrideRoles: ['IT_ADMIN', 'SUPER_ADMIN'] },
     ]},
-    { section: 'Intelligence', items: [
-        { label: 'AI Assistant', icon: '🤖', path: '/dashboard/ai-assistant' },
-        { label: 'Reports', icon: '📈', path: '/dashboard/reports' },
+    { section: 'Intelligence', allowedRoles: ['SUPER_ADMIN', 'HR_MANAGER'], items: [
+        { label: 'AI Assistant', icon: Bot, path: '/dashboard/ai-assistant' },
+        { label: 'Reports', icon: LineChart, path: '/dashboard/reports' },
     ]},
 ];
 
 const DashboardLayout = ({ children, title = 'Dashboard' }) => {
     const navigate = useNavigate();
     const role = localStorage.getItem('userRole') || 'EMPLOYEE';
+    const [userProfile, setUserProfile] = useState(null);
+    const [theme, setTheme] = useState(localStorage.getItem('appTheme') || 'dark');
+
+    useEffect(() => {
+        getMyProfile().then(res => setUserProfile(res.data)).catch(() => {});
+    }, []);
+
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('appTheme', theme);
+    }, [theme]);
+
+    const toggleTheme = () => {
+        setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    };
 
     const handleLogout = () => {
         localStorage.removeItem('userToken');
         localStorage.removeItem('userRole');
-        navigate('/login');
+        navigate('/');
     };
 
     const roleLabel = role.replace('_', ' ');
-    const initials = roleLabel.split(' ').map(w => w[0]).join('').toUpperCase();
+    const displayName = userProfile?.name || roleLabel;
+    const initials = displayName.split(' ').map(w => w[0]).join('').toUpperCase().substring(0, 2);
+    
+    const avatarContent = userProfile?.profilePhoto ? (
+        <img src={userProfile.profilePhoto} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+    ) : initials;
 
     return (
         <div className="dashboard-layout">
@@ -53,34 +80,41 @@ const DashboardLayout = ({ children, title = 'Dashboard' }) => {
                 </div>
 
                 <nav className="sidebar-nav">
-                    {navItems.map(section => (
+                    {navItems.filter(section => 
+                        section.allowedRoles.includes('ALL') || section.allowedRoles.includes(role)
+                    ).map(section => (
                         <div key={section.section}>
                             <div className="nav-section-label">{section.section}</div>
-                            {section.items.map(item => (
-                                <NavLink
-                                    key={item.path}
-                                    to={item.path}
-                                    end={item.path === '/dashboard'}
-                                    className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-                                >
-                                    <span className="nav-icon">{item.icon}</span>
-                                    {item.label}
-                                </NavLink>
-                            ))}
+                            {section.items.filter(item => 
+                                !item.overrideRoles || item.overrideRoles.includes(role)
+                            ).map(item => {
+                                const IconComp = item.icon;
+                                return (
+                                    <NavLink
+                                        key={item.path}
+                                        to={item.path}
+                                        end={item.path === '/dashboard'}
+                                        className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                                    >
+                                        <span className="nav-icon"><IconComp size={18} /></span>
+                                        {item.label}
+                                    </NavLink>
+                                );
+                            })}
                         </div>
                     ))}
                 </nav>
 
                 <div className="sidebar-footer">
                     <div className="user-profile-mini">
-                        <div className="user-avatar">{initials}</div>
+                        <div className="user-avatar" style={{ overflow: 'hidden' }}>{avatarContent}</div>
                         <div className="user-info-mini">
-                            <div className="user-name-mini">{roleLabel}</div>
-                            <div className="user-role-mini">Authenticated User</div>
+                            <div className="user-name-mini">{displayName}</div>
+                            <div className="user-role-mini">{userProfile?.designation || 'Authenticated User'}</div>
                         </div>
                     </div>
-                    <button className="logout-btn" onClick={handleLogout}>
-                        🚪 Sign Out
+                    <button className="logout-btn" onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                        <LogOut size={18} /> Sign Out
                     </button>
                 </div>
             </aside>
@@ -91,12 +125,19 @@ const DashboardLayout = ({ children, title = 'Dashboard' }) => {
                 <div className="dashboard-topbar">
                     <div className="topbar-title">{title}</div>
                     <div className="topbar-actions">
-                        <div className="topbar-badge">
-                            🔔
+                        <div className="topbar-badge" title="Notifications">
+                            <Bell size={18} />
                             <span className="badge-dot"></span>
                         </div>
-                        <div className="topbar-badge">⚙️</div>
-                        <div className="user-avatar" style={{ cursor: 'pointer' }}>{initials}</div>
+                        <div className="topbar-badge" onClick={toggleTheme} title="Toggle Theme" style={{ cursor: 'pointer' }}>
+                            {theme === 'dark' ? '☀️' : '🌙'}
+                        </div>
+                        <div className="topbar-badge" title="Settings">
+                            <Settings size={18} />
+                        </div>
+                        <div className="user-avatar" style={{ cursor: 'pointer', overflow: 'hidden' }} onClick={() => navigate('/dashboard/profile')} title="My Profile">
+                            {avatarContent}
+                        </div>
                     </div>
                 </div>
 

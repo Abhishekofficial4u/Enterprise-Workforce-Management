@@ -65,6 +65,15 @@ const Login = () => {
             {/* Right Form Panel */}
             <div className="login-right">
                 <div className="login-form-container">
+                    <button 
+                        onClick={() => navigate('/')} 
+                        style={{ 
+                            background: 'none', border: 'none', color: 'var(--text-muted)', 
+                            cursor: 'pointer', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '5px' 
+                        }}
+                    >
+                        ← Back to Website
+                    </button>
                     <div className="login-form-header">
                         <h2>Welcome back 👋</h2>
                         <p>Sign in to access your workspace.</p>

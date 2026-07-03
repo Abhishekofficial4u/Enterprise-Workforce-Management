@@ -54,18 +54,45 @@ const EmployeeSchema = new mongoose.Schema({
         type: String,
         enum: ['Active', 'Archived', 'Probation', 'Exited'],
         default: 'Active'
+    },
+    // ---- Professional Profile Fields ----
+    profilePhoto: {
+        type: String,
+        default: ''
+    },
+    bio: {
+        type: String,
+        default: ''
+    },
+    skills: {
+        type: [String],
+        default: []
+    },
+    education: {
+        type: [{
+            degree: String,
+            institution: String,
+            year: String
+        }],
+        default: []
+    },
+    experience: {
+        type: [{
+            role: String,
+            company: String,
+            duration: String
+        }],
+        default: []
     }
 }, { timestamps: true });
 
 // Pre-save hook to generate employeeId if it doesn't exist
-EmployeeSchema.pre('validate', async function(next) {
+EmployeeSchema.pre('validate', async function() {
     if (this.isNew && !this.employeeId) {
         // Logic to auto-generate employeeId (e.g., EMP001, EMP002)
-        // In a real app, this should be an atomic operation or a sequence collection
         const count = await mongoose.model('Employee').countDocuments();
         this.employeeId = `EMP${(count + 1).toString().padStart(3, '0')}`;
     }
-    next();
 });
 
 module.exports = mongoose.model('Employee', EmployeeSchema);

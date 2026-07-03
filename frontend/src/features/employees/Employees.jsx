@@ -1,35 +1,71 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../../layouts/DashboardLayout';
+import AddEmployeeModal from './components/AddEmployeeModal';
+import EditEmployeeModal from './components/EditEmployeeModal';
+import ViewEmployeeModal from './components/ViewEmployeeModal';
+import { getEmployees, archiveEmployee } from './api/employeeService';
 import '../../components/shared.css';
 
 const avatarColors = ['#6366f1','#0ea5e9','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899'];
-
-const mockEmployees = [
-    { id: 'EMP001', name: 'Rahul Sharma',   dept: 'Engineering',  role: 'Software Engineer',    status: 'Active',    joined: '15 Jan 2025' },
-    { id: 'EMP002', name: 'Priya Mehta',    dept: 'HR',           role: 'HR Manager',           status: 'Active',    joined: '02 Mar 2024' },
-    { id: 'EMP003', name: 'Amit Verma',     dept: 'Finance',      role: 'Finance Executive',    status: 'Active',    joined: '10 Jun 2024' },
-    { id: 'EMP004', name: 'Sneha Patil',    dept: 'Marketing',    role: 'Marketing Lead',       status: 'Probation', joined: '01 May 2026' },
-    { id: 'EMP005', name: 'Karan Singh',    dept: 'Engineering',  role: 'Senior Developer',     status: 'Active',    joined: '20 Aug 2023' },
-    { id: 'EMP006', name: 'Anita Joshi',    dept: 'Operations',   role: 'Operations Manager',   status: 'Active',    joined: '11 Nov 2022' },
-    { id: 'EMP007', name: 'Rohan Gupta',    dept: 'IT',           role: 'IT Administrator',     status: 'Active',    joined: '03 Feb 2025' },
-    { id: 'EMP008', name: 'Divya Nair',     dept: 'Engineering',  role: 'QA Engineer',          status: 'Probation', joined: '15 Jun 2026' },
-];
-
 const depts = ['All', 'Engineering', 'HR', 'Finance', 'Marketing', 'IT', 'Operations'];
 
 const Employees = () => {
+    const [employees, setEmployees] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [search, setSearch] = useState('');
     const [activeDept, setActiveDept] = useState('All');
+    const [showAddModal, setShowAddModal] = useState(false);
+    
+    // New states for View/Edit
+    const [viewEmployee, setViewEmployee] = useState(null);
+    const [editEmployee, setEditEmployee] = useState(null);
 
-    const filtered = mockEmployees.filter(e => {
-        const matchSearch = e.name.toLowerCase().includes(search.toLowerCase()) ||
-                            e.id.toLowerCase().includes(search.toLowerCase());
-        const matchDept = activeDept === 'All' || e.dept === activeDept;
+    const fetchEmployees = async () => {
+        setLoading(true);
+        try {
+            const res = await getEmployees();
+            setEmployees(res.data || []);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to load employees');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchEmployees();
+    }, []);
+
+    const filtered = employees.filter(e => {
+        const matchSearch = e.name?.toLowerCase().includes(search.toLowerCase()) ||
+                            e.employeeId?.toLowerCase().includes(search.toLowerCase());
+        const matchDept = activeDept === 'All' || e.department === activeDept;
         return matchSearch && matchDept;
     });
 
-    const getInitials = name => name.split(' ').map(w => w[0]).join('');
+    const getInitials = name => name ? name.split(' ').map(w => w[0]).join('') : '?';
     const getColor  = i => avatarColors[i % avatarColors.length];
+    const formatDate = d => new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+    const handleArchive = async (emp) => {
+        if (window.confirm(`Are you sure you want to archive ${emp.name}? This will revoke their access.`)) {
+            try {
+                await archiveEmployee(emp._id);
+                fetchEmployees(); // Refresh list
+            } catch (err) {
+                alert(err.response?.data?.message || 'Failed to archive employee');
+            }
+        }
+    };
+
+    // Dynamic stats
+    const stats = [
+        { label: 'Total',      value: employees.length, color: '#6366f1' },
+        { label: 'Active',     value: employees.filter(e => e.status === 'Active').length, color: '#10b981' },
+        { label: 'Probation',  value: employees.filter(e => e.status === 'Probation').length, color: '#f59e0b' },
+        { label: 'Archived',   value: employees.filter(e => e.status === 'Archived').length, color: '#ef4444' },
+    ];
 
     return (
         <DashboardLayout title="Employees">
@@ -38,22 +74,19 @@ const Employees = () => {
                 <div className="page-header">
                     <div className="page-header-left">
                         <h1>Employee Directory</h1>
-                        <p>{mockEmployees.length} total employees across all departments</p>
+                        <p>{employees.length} total employees across all departments</p>
                     </div>
                     <div style={{ display: 'flex', gap: 10 }}>
                         <button className="btn-secondary">⬇️ Export</button>
-                        <button className="btn-primary">➕ Add Employee</button>
+                        <button className="btn-primary" onClick={() => setShowAddModal(true)}>
+                            ➕ Add Employee
+                        </button>
                     </div>
                 </div>
 
                 {/* Stats mini row */}
                 <div style={{ display: 'flex', gap: 14, marginBottom: 22 }}>
-                    {[
-                        { label: 'Total',      value: 248, color: '#6366f1' },
-                        { label: 'Active',     value: 230, color: '#10b981' },
-                        { label: 'Probation',  value: 12,  color: '#f59e0b' },
-                        { label: 'Archived',   value: 6,   color: '#ef4444' },
-                    ].map(s => (
+                    {stats.map(s => (
                         <div key={s.label} style={{
                             background: 'var(--bg-card)', border: '1px solid var(--border)',
                             borderRadius: 10, padding: '14px 20px', flex: 1,
@@ -87,62 +120,107 @@ const Employees = () => {
                     ))}
                 </div>
 
+                {/* Error & Loading States */}
+                {error && <div className="alert-error" style={{marginBottom: 20}}>⚠️ {error}</div>}
+                
                 {/* Table */}
                 <div className="data-table-wrap">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th>Employee</th>
-                                <th>Department</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Joined</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filtered.map((emp, i) => (
-                                <tr key={emp.id}>
-                                    <td>
-                                        <div className="emp-cell">
-                                            <div className="emp-avatar" style={{ background: getColor(i) }}>
-                                                {getInitials(emp.name)}
-                                            </div>
-                                            <div>
-                                                <div className="emp-name">{emp.name}</div>
-                                                <div className="emp-id">{emp.id}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>{emp.dept}</td>
-                                    <td>{emp.role}</td>
-                                    <td>
-                                        <span className={`badge badge-${emp.status.toLowerCase()}`}>
-                                            {emp.status === 'Active' ? '●' : '◌'} {emp.status}
-                                        </span>
-                                    </td>
-                                    <td>{emp.joined}</td>
-                                    <td>
-                                        <div className="action-btns">
-                                            <div className="icon-btn" title="View">👁️</div>
-                                            <div className="icon-btn" title="Edit">✏️</div>
-                                            <div className="icon-btn" title="Archive">🗃️</div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    <div className="table-footer">
-                        <span className="table-info">Showing {filtered.length} of {mockEmployees.length} employees</span>
-                        <div className="pagination">
-                            {[1,2,3].map(n => (
-                                <button key={n} className={`page-btn ${n === 1 ? 'active' : ''}`}>{n}</button>
-                            ))}
+                    {loading ? (
+                        <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
+                            <div className="spinner" style={{ margin: '0 auto 10px' }}></div>
+                            Loading directory...
                         </div>
-                    </div>
+                    ) : (
+                        <>
+                            <table className="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Department</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Joined</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filtered.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="6" style={{ textAlign: 'center', padding: 30, color: 'var(--text-muted)' }}>
+                                                No employees found.
+                                            </td>
+                                        </tr>
+                                    ) : filtered.map((emp, i) => (
+                                        <tr key={emp._id}>
+                                            <td>
+                                                <div className="emp-cell">
+                                                    <div className="emp-avatar" style={{ background: getColor(i) }}>
+                                                        {getInitials(emp.name)}
+                                                    </div>
+                                                    <div>
+                                                        <div className="emp-name">{emp.name}</div>
+                                                        <div className="emp-id">{emp.employeeId}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>{emp.department}</td>
+                                            <td>{emp.designation}</td>
+                                            <td>
+                                                <span className={`badge badge-${(emp.status || 'Active').toLowerCase()}`}>
+                                                    {emp.status === 'Active' ? '●' : '◌'} {emp.status || 'Active'}
+                                                </span>
+                                            </td>
+                                            <td>{formatDate(emp.joiningDate)}</td>
+                                            <td>
+                                                <div className="action-btns">
+                                                    <div className="icon-btn" title="View" onClick={() => setViewEmployee(emp)}>👁️</div>
+                                                    <div className="icon-btn" title="Edit" onClick={() => setEditEmployee(emp)}>✏️</div>
+                                                    <div className="icon-btn" title="Archive" onClick={() => handleArchive(emp)}>🗃️</div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            <div className="table-footer">
+                                <span className="table-info">Showing {filtered.length} of {employees.length} employees</span>
+                                <div className="pagination">
+                                    {[1].map(n => (
+                                        <button key={n} className={`page-btn ${n === 1 ? 'active' : ''}`}>{n}</button>
+                                    ))}
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
+
+            {/* Modals */}
+            {showAddModal && (
+                <AddEmployeeModal
+                    onClose={() => setShowAddModal(false)}
+                    onSuccess={() => {
+                        setShowAddModal(false);
+                        fetchEmployees();
+                    }}
+                />
+            )}
+            {viewEmployee && (
+                <ViewEmployeeModal
+                    employee={viewEmployee}
+                    onClose={() => setViewEmployee(null)}
+                />
+            )}
+            {editEmployee && (
+                <EditEmployeeModal
+                    employee={editEmployee}
+                    onClose={() => setEditEmployee(null)}
+                    onSuccess={() => {
+                        setEditEmployee(null);
+                        fetchEmployees();
+                    }}
+                />
+            )}
         </DashboardLayout>
     );
 };

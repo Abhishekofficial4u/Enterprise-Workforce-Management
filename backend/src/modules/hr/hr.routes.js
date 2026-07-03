@@ -11,7 +11,12 @@ router.route('/employees')
     .get(employeeController.getEmployees)
     .post(authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), employeeController.createEmployee);
 
+router.route('/employees/me')
+    .get(employeeController.getMyProfile)
+    .put(employeeController.updateMyProfile);
+
 router.route('/employees/:id')
+    .put(authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), employeeController.updateEmployee)
     .delete(authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), employeeController.archiveEmployee);
 
 module.exports = router;

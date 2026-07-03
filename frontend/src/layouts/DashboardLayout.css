@@ -12,7 +12,7 @@
   width: 240px;
   min-width: 240px;
   background: var(--bg-sidebar);
-  border-right: 1px solid var(--border);
+  border-right: 1px solid var(--sidebar-border);
   display: flex;
   flex-direction: column;
   padding: 0;
@@ -25,13 +25,14 @@
   align-items: center;
   gap: 10px;
   padding: 24px 20px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--sidebar-border);
 }
 
 .sidebar-brand-icon {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  background: var(--sidebar-active-bg);
+  color: var(--sidebar-active-text);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -43,15 +44,15 @@
 .sidebar-brand-name {
   font-size: 14px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--sidebar-text);
   letter-spacing: -0.2px;
   line-height: 1.2;
 }
 
 .sidebar-brand-sub {
   font-size: 10px;
-  color: var(--text-muted);
-  font-weight: 400;
+  color: var(--sidebar-text-muted);
+  font-weight: 500;
 }
 
 .sidebar-nav {
@@ -65,7 +66,7 @@
 .nav-section-label {
   font-size: 10px;
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--sidebar-text-muted);
   letter-spacing: 1px;
   text-transform: uppercase;
   padding: 12px 8px 6px;
@@ -82,7 +83,7 @@
   transition: all 0.15s;
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--sidebar-text-muted);
   text-decoration: none;
   border: none;
   background: none;
@@ -91,17 +92,17 @@
 }
 
 .nav-item:hover {
-  background: rgba(255,255,255,0.05);
-  color: var(--text-primary);
+  background: rgba(0,0,0,0.03);
+  color: var(--sidebar-text);
 }
 
 .nav-item.active {
-  background: rgba(99,102,241,0.15);
-  color: var(--primary-light);
+  background: var(--sidebar-active-bg);
+  color: var(--sidebar-active-text);
 }
 
 .nav-item.active .nav-icon {
-  color: var(--primary-light);
+  color: var(--sidebar-active-text);
 }
 
 .nav-icon {
@@ -113,7 +114,7 @@
 
 .sidebar-footer {
   padding: 16px 12px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--sidebar-border);
 }
 
 .user-profile-mini {
@@ -142,12 +143,12 @@
 .user-info-mini .user-name-mini {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--sidebar-text);
 }
 
 .user-info-mini .user-role-mini {
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--sidebar-text-muted);
 }
 
 .logout-btn {

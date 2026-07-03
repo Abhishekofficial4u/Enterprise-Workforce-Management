@@ -1,0 +1,114 @@
+.projects-container {
+    padding: 20px;
+    height: 100%;
+}
+
+.projects-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.project-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.project-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    border-color: var(--primary);
+}
+
+.project-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.project-card-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-planning { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
+.status-active { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
+.status-on-hold { background: rgba(250, 204, 21, 0.2); color: #facc15; }
+.status-completed { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+.status-cancelled { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+
+.project-client {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0 0 12px 0;
+}
+
+.project-desc {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin: 0 0 20px 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.project-meta {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.meta-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.meta-value {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.priority-indicator {
+    font-weight: 600;
+}
+
+.priority-low { color: #4ade80; }
+.priority-medium { color: #38bdf8; }
+.priority-high { color: #facc15; }
+.priority-critical { color: #f87171; }
+
+.project-modal {
+    max-width: 600px;
+    width: 100%;
+}

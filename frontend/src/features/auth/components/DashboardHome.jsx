@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../../layouts/DashboardLayout';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
@@ -22,13 +23,6 @@ const recentActivity = [
     { color: 'red',    text: 'Support ticket raised #TKT-1082',     sub: 'Help Desk • IT',             time: '2 hr ago' },
 ];
 
-const statCards = [
-    { label: 'Total Employees', value: '248', icon: '👥', color: 'indigo', change: '↑ 12 this month', upDown: 'up' },
-    { label: 'Present Today',   value: '211', icon: '✅', color: 'green',  change: '85% attendance rate', upDown: 'up' },
-    { label: 'Leave Requests',  value: '14',  icon: '📋', color: 'amber',  change: '↓ 3 vs last week',    upDown: 'down' },
-    { label: 'Open Tickets',    value: '7',   icon: '🎫', color: 'red',    change: '2 critical',           upDown: 'down' },
-];
-
 const modules = [
     { icon: '🔐', label: 'Authentication',  status: 'live' },
     { icon: '👥', label: 'HR Management',   status: 'live' },
@@ -50,8 +44,87 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 const DashboardHome = () => {
+    const navigate = useNavigate();
     const role = localStorage.getItem('userRole') || 'EMPLOYEE';
     const now = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    const [todayAttendance, setTodayAttendance] = useState(null);
+    const [attLoading, setAttLoading] = useState(false);
+    const [userProfile, setUserProfile] = useState(null);
+
+    useEffect(() => {
+        import('../../employees/api/employeeService').then(({ getMyProfile }) => {
+            getMyProfile().then(res => setUserProfile(res.data)).catch(() => {});
+        });
+        if (role === 'EMPLOYEE') {
+            import('../../attendance/api/attendanceService').then(({ getMyAttendance }) => {
+                getMyAttendance().then(res => {
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    const record = res.data?.find(a => a.date === todayStr);
+                    if (record) setTodayAttendance(record);
+                }).catch(console.error);
+            });
+        }
+    }, [role]);
+
+    const handleClock = async () => {
+        if (todayAttendance?.clockOut) return;
+        setAttLoading(true);
+        try {
+            const { clockIn, clockOut } = await import('../../attendance/api/attendanceService');
+            if (todayAttendance && !todayAttendance.clockOut) {
+                const res = await clockOut();
+                setTodayAttendance(res.data);
+                alert('Clocked out successfully!');
+            } else if (!todayAttendance) {
+                const res = await clockIn();
+                setTodayAttendance(res.data);
+                alert('Clocked in successfully!');
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || 'Error clocking in/out');
+        } finally {
+            setAttLoading(false);
+        }
+    };
+
+    let statCards = [];
+    let quickActions = [];
+
+    if (role === 'SUPER_ADMIN' || role === 'HR_MANAGER') {
+        statCards = [
+            { label: 'Total Employees', value: '248', icon: '👥', color: 'indigo', change: '↑ 12 this month', upDown: 'up' },
+            { label: 'Present Today',   value: '211', icon: '✅', color: 'green',  change: '85% attendance rate', upDown: 'up' },
+            { label: 'Leave Requests',  value: '14',  icon: '📋', color: 'amber',  change: '↓ 3 vs last week',    upDown: 'down' },
+            { label: 'Open Tickets',    value: '7',   icon: '🎫', color: 'red',    change: '2 critical',           upDown: 'down' },
+        ];
+        quickActions = [
+            { icon: '➕', label: 'Add Employee' },
+            { icon: '📋', label: 'Review Leave', onClick: () => navigate('/dashboard/leave') },
+            { icon: '💰', label: 'Run Payroll', onClick: () => navigate('/dashboard/payroll') },
+            { icon: '🎯', label: 'Post Job' },
+            { icon: '📊', label: 'Reports' },
+            { icon: '🤖', label: 'AI Chat' },
+        ];
+    } else {
+        statCards = [
+            { label: 'My Leave Balance', value: '18', icon: '🌴', color: 'indigo', change: 'Available days', upDown: 'up' },
+            { label: 'Hours This Week',  value: '36', icon: '⏱️', color: 'green',  change: '4 hours remaining', upDown: 'up' },
+            { label: 'Pending Approvals',value: '1',  icon: '📋', color: 'amber',  change: 'Sick Leave',    upDown: 'down' },
+            { label: 'My Tickets',       value: '0',  icon: '🎫', color: 'red',    change: 'All resolved',  upDown: 'up' },
+        ];
+        quickActions = [
+            { 
+                icon: '⏱️', 
+                label: attLoading ? 'Wait...' : (todayAttendance ? (todayAttendance.clockOut ? 'Clocked Out' : 'Clock Out') : 'Clock In'),
+                onClick: handleClock,
+                disabled: !!todayAttendance?.clockOut || attLoading
+            },
+            { icon: '📋', label: 'Apply Leave', onClick: () => navigate('/dashboard/leave') },
+            { icon: '💰', label: 'Payslips', onClick: () => navigate('/dashboard/payroll') },
+            { icon: '🎫', label: 'IT Help' },
+        ];
+    }
 
     return (
         <DashboardLayout title="Dashboard">
@@ -60,7 +133,7 @@ const DashboardHome = () => {
                 {/* Welcome Banner */}
                 <div className="welcome-banner">
                     <div className="welcome-text">
-                        <h2>Good day, {role.replace('_', ' ')} 👋</h2>
+                        <h2>Good day, {userProfile?.name || role.replace('_', ' ')} 👋</h2>
                         <p>Here's your workforce overview for today. Everything looks on track.</p>
                     </div>
                     <div className="welcome-date">{now}</div>
@@ -114,15 +187,8 @@ const DashboardHome = () => {
                             <span className="card-title">Quick Actions</span>
                         </div>
                         <div className="quick-actions">
-                            {[
-                                { icon: '➕', label: 'Add Employee' },
-                                { icon: '📋', label: 'Apply Leave' },
-                                { icon: '💰', label: 'Run Payroll' },
-                                { icon: '🎯', label: 'Post Job' },
-                                { icon: '📊', label: 'Reports' },
-                                { icon: '🤖', label: 'AI Chat' },
-                            ].map(a => (
-                                <button key={a.label} className="quick-action-btn">
+                            {quickActions.map(a => (
+                                <button key={a.label} className="quick-action-btn" onClick={a.onClick} disabled={a.disabled} style={{ opacity: a.disabled ? 0.5 : 1, cursor: a.disabled ? 'not-allowed' : 'pointer' }}>
                                     <span className="qa-icon">{a.icon}</span>
                                     <span className="qa-label">{a.label}</span>
                                 </button>

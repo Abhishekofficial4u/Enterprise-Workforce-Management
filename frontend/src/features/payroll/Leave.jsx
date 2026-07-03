@@ -1,137 +1,177 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../../layouts/DashboardLayout';
+import { applyLeave, getMyLeaves, getAllLeaves, updateLeaveStatus } from './api/leaveService';
 import '../../components/shared.css';
 
-const mockLeaves = [
-    { id: 'LV-001', name: 'Karan Singh',  dept: 'Engineering', type: 'Casual Leave',   from: '02 Jul 2026', to: '04 Jul 2026', days: 3, reason: 'Family event',       status: 'Pending'  },
-    { id: 'LV-002', name: 'Priya Mehta',  dept: 'HR',          type: 'Sick Leave',     from: '01 Jul 2026', to: '01 Jul 2026', days: 1, reason: 'Fever',              status: 'Approved' },
-    { id: 'LV-003', name: 'Divya Nair',   dept: 'Engineering', type: 'Earned Leave',   from: '10 Jul 2026', to: '15 Jul 2026', days: 6, reason: 'Vacation',          status: 'Pending'  },
-    { id: 'LV-004', name: 'Amit Verma',   dept: 'Finance',     type: 'Casual Leave',   from: '28 Jun 2026', to: '28 Jun 2026', days: 1, reason: 'Personal work',     status: 'Rejected' },
-    { id: 'LV-005', name: 'Sneha Patil',  dept: 'Marketing',   type: 'Work From Home', from: '05 Jul 2026', to: '07 Jul 2026', days: 3, reason: 'Home renovation',   status: 'Approved' },
-];
-
-const leaveBalance = [
-    { type: 'Casual Leave',   used: 7,  total: 12 },
-    { type: 'Sick Leave',     used: 2,  total: 10 },
-    { type: 'Earned Leave',   used: 4,  total: 15 },
-    { type: 'Work From Home', used: 5,  total: 12 },
-];
-
 const Leave = () => {
-    const [activeTab, setActiveTab] = useState('all');
+    const role = localStorage.getItem('userRole');
+    const isAdmin = role === 'SUPER_ADMIN' || role === 'HR_MANAGER' || role === 'MANAGER';
 
-    const filtered = activeTab === 'all'
-        ? mockLeaves
-        : mockLeaves.filter(l => l.status.toLowerCase() === activeTab);
+    const [leaves, setLeaves] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    // Apply Leave Form State
+    const [leaveType, setLeaveType] = useState('Casual Leave');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [reason, setReason] = useState('');
+    const [applying, setApplying] = useState(false);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            if (isAdmin) {
+                const res = await getAllLeaves();
+                setLeaves(res.data);
+            } else {
+                const res = await getMyLeaves();
+                setLeaves(res.data);
+            }
+        } catch (err) {
+            setError('Failed to load leave data.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleApply = async (e) => {
+        e.preventDefault();
+        setApplying(true);
+        setError('');
+        try {
+            await applyLeave({ leaveType, startDate, endDate, reason });
+            fetchData();
+            setStartDate('');
+            setEndDate('');
+            setReason('');
+            alert('Leave application submitted!');
+        } catch (err) {
+            setError(err.response?.data?.message || 'Error applying for leave');
+        } finally {
+            setApplying(false);
+        }
+    };
+
+    const handleStatusUpdate = async (id, newStatus) => {
+        try {
+            await updateLeaveStatus(id, newStatus);
+            fetchData();
+        } catch (err) {
+            alert('Error updating status');
+        }
+    };
 
     return (
         <DashboardLayout title="Leave Management">
-            <div>
-                <div className="page-header">
-                    <div className="page-header-left">
-                        <h1>Leave Management</h1>
-                        <p>Track and manage employee leave requests and balances</p>
-                    </div>
-                    <button className="btn-primary">➕ Apply Leave</button>
-                </div>
+            <div className="shared-container">
+                {error && <div className="alert-error">{error}</div>}
 
-                {/* Leave Balance Cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 24 }}>
-                    {leaveBalance.map(lb => {
-                        const pct = Math.round((lb.used / lb.total) * 100);
-                        return (
-                            <div key={lb.type} style={{
-                                background: 'var(--bg-card)', border: '1px solid var(--border)',
-                                borderRadius: 12, padding: '18px 20px'
-                            }}>
-                                <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{lb.type}</div>
-                                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 10 }}>
-                                    <span style={{ fontSize: 28, fontWeight: 800, color: 'var(--text-primary)' }}>{lb.total - lb.used}</span>
-                                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>/ {lb.total} left</span>
-                                </div>
-                                <div style={{ height: 6, background: 'rgba(255,255,255,0.07)', borderRadius: 10, overflow: 'hidden' }}>
-                                    <div style={{ height: '100%', width: `${pct}%`, borderRadius: 10, background: pct > 70 ? '#ef4444' : pct > 40 ? '#f59e0b' : '#10b981' }} />
-                                </div>
-                                <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 6 }}>{lb.used} used of {lb.total}</div>
+                {/* Employee Request Form */}
+                {!isAdmin && (
+                    <div className="card" style={{ marginBottom: '24px' }}>
+                        <div className="card-header">
+                            <span className="card-title">Apply for Leave</span>
+                        </div>
+                        <form onSubmit={handleApply} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', marginTop: '16px' }}>
+                            <div className="form-field" style={{ marginBottom: 0 }}>
+                                <label>Leave Type</label>
+                                <select value={leaveType} onChange={(e) => setLeaveType(e.target.value)} required>
+                                    <option>Casual Leave</option>
+                                    <option>Sick Leave</option>
+                                    <option>Earned Leave</option>
+                                    <option>Maternity Leave</option>
+                                    <option>Work From Home</option>
+                                </select>
                             </div>
-                        );
-                    })}
-                </div>
-
-                {/* Tabs */}
-                <div style={{ display: 'flex', gap: 4, marginBottom: 18, borderBottom: '1px solid var(--border)', paddingBottom: 0 }}>
-                    {['all','pending','approved','rejected'].map(tab => (
-                        <button
-                            key={tab}
-                            onClick={() => setActiveTab(tab)}
-                            style={{
-                                padding: '10px 18px', background: 'none', border: 'none',
-                                borderBottom: activeTab === tab ? '2px solid var(--primary)' : '2px solid transparent',
-                                color: activeTab === tab ? 'var(--primary-light)' : 'var(--text-muted)',
-                                fontSize: 13.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
-                                textTransform: 'capitalize', transition: 'all 0.15s'
-                            }}
-                        >
-                            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                            <span style={{
-                                marginLeft: 6, fontSize: 11, padding: '2px 7px', borderRadius: 20,
-                                background: activeTab === tab ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.06)',
-                                color: activeTab === tab ? 'var(--primary-light)' : 'var(--text-muted)'
-                            }}>
-                                {tab === 'all' ? mockLeaves.length : mockLeaves.filter(l => l.status.toLowerCase() === tab).length}
-                            </span>
-                        </button>
-                    ))}
-                </div>
-
-                {/* Table */}
-                <div className="data-table-wrap">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th>Employee</th>
-                                <th>Leave Type</th>
-                                <th>From</th>
-                                <th>To</th>
-                                <th>Days</th>
-                                <th>Reason</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filtered.map(l => (
-                                <tr key={l.id}>
-                                    <td>
-                                        <div className="emp-name">{l.name}</div>
-                                        <div className="emp-id">{l.dept}</div>
-                                    </td>
-                                    <td>{l.type}</td>
-                                    <td>{l.from}</td>
-                                    <td>{l.to}</td>
-                                    <td><strong style={{ color: 'var(--text-primary)' }}>{l.days}</strong></td>
-                                    <td style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.reason}</td>
-                                    <td>
-                                        <span className={`badge badge-${l.status.toLowerCase()}`}>
-                                            {l.status}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div className="action-btns">
-                                            {l.status === 'Pending' && <>
-                                                <div className="icon-btn" title="Approve" style={{ color: '#34d399' }}>✅</div>
-                                                <div className="icon-btn" title="Reject"  style={{ color: '#f87171' }}>❌</div>
-                                            </>}
-                                            <div className="icon-btn" title="View">👁️</div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    <div className="table-footer">
-                        <span className="table-info">Showing {filtered.length} leave requests</span>
+                            <div className="form-field" style={{ marginBottom: 0 }}>
+                                <label>Start Date</label>
+                                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
+                            </div>
+                            <div className="form-field" style={{ marginBottom: 0 }}>
+                                <label>End Date</label>
+                                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
+                            </div>
+                            <div className="form-field" style={{ gridColumn: 'span 3', marginBottom: 0 }}>
+                                <label>Reason</label>
+                                <input type="text" value={reason} onChange={(e) => setReason(e.target.value)} required placeholder="Reason for leave..." />
+                            </div>
+                            <button type="submit" className="btn-primary" disabled={applying} style={{ gridColumn: 'span 3', justifySelf: 'start', padding: '10px 24px' }}>
+                                {applying ? 'Submitting...' : 'Submit Request'}
+                            </button>
+                        </form>
                     </div>
+                )}
+
+                {/* Leaves Table */}
+                <div className="card">
+                    <div className="card-header">
+                        <span className="card-title">{isAdmin ? 'All Leave Requests' : 'My Leave History'}</span>
+                    </div>
+
+                    {loading ? (
+                        <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>Loading records...</div>
+                    ) : leaves.length === 0 ? (
+                        <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                            No leave records found.
+                        </div>
+                    ) : (
+                        <div className="table-responsive" style={{ marginTop: '16px' }}>
+                            <table className="data-table">
+                                <thead>
+                                    <tr>
+                                        {isAdmin && <th>Employee</th>}
+                                        <th>Type</th>
+                                        <th>Duration</th>
+                                        <th>Reason</th>
+                                        <th>Status</th>
+                                        {isAdmin && <th>Actions</th>}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {leaves.map(leave => (
+                                        <tr key={leave._id}>
+                                            {isAdmin && (
+                                                <td>
+                                                    <div style={{ fontWeight: 600 }}>{leave.employeeId?.name || 'Unknown'}</div>
+                                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{leave.employeeId?.department}</div>
+                                                </td>
+                                            )}
+                                            <td>
+                                                <div style={{ fontWeight: 600 }}>{leave.leaveType}</div>
+                                            </td>
+                                            <td>
+                                                <div style={{ fontSize: '14px' }}>{new Date(leave.startDate).toLocaleDateString()}</div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>to {new Date(leave.endDate).toLocaleDateString()}</div>
+                                            </td>
+                                            <td style={{ maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={leave.reason}>
+                                                {leave.reason}
+                                            </td>
+                                            <td>
+                                                <span className={`status-badge ${leave.status.toLowerCase()}`}>{leave.status}</span>
+                                            </td>
+                                            {isAdmin && (
+                                                <td>
+                                                    {leave.status === 'Pending' ? (
+                                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                                            <button className="btn-primary" onClick={() => handleStatusUpdate(leave._id, 'Approved')} style={{ padding: '4px 8px', fontSize: '12px', background: 'var(--success)' }}>Approve</button>
+                                                            <button className="btn-secondary" onClick={() => handleStatusUpdate(leave._id, 'Rejected')} style={{ padding: '4px 8px', fontSize: '12px', background: 'var(--danger)', color: 'white', border: 'none' }}>Reject</button>
+                                                        </div>
+                                                    ) : (
+                                                        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Reviewed</span>
+                                                    )}
+                                                </td>
+                                            )}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </div>
             </div>
         </DashboardLayout>
