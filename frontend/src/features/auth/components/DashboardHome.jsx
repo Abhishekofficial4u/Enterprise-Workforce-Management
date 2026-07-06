@@ -82,13 +82,13 @@ const DashboardHome = () => {
         if (role === 'SUPER_ADMIN' || role === 'HR_MANAGER') {
             const fetchRealStats = async () => {
                 try {
-                    const { getAllEmployees } = await import('../../employees/api/employeeService');
+                    const { getEmployees } = await import('../../employees/api/employeeService');
                     const { getAllAttendance } = await import('../../attendance/api/attendanceService');
                     const { getAllLeaves } = await import('../../payroll/api/leaveService');
                     const { getAllTickets } = await import('../../helpdesk/api/helpdeskService');
 
                     const [empRes, attRes, leaveRes, tktRes] = await Promise.all([
-                        getAllEmployees(),
+                        getEmployees(),
                         getAllAttendance(new Date().toISOString().split('T')[0]),
                         getAllLeaves(),
                         getAllTickets()
