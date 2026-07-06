@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'https://enterprise-workforce-management.onrender.com/api/v1/performance';
+const API_URL = 'http://localhost:5000/api/v1/performance';
 
 axios.interceptors.request.use((config) => {
     const token = localStorage.getItem('userToken');

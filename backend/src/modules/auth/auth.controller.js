@@ -117,8 +117,12 @@ exports.forgotPassword = async (req, res) => {
             await user.save({ validateBeforeSave: false });
         });
 
-        // Respond immediately so UI doesn't hang
-        res.status(200).json({ success: true, message: 'If an account exists, a reset link was sent' });
+        // Respond immediately so UI doesn't hang. Include resetUrl for Render Free Tier fallback.
+        res.status(200).json({ 
+            success: true, 
+            message: 'If an account exists, a reset link was sent',
+            resetUrl: resetUrl 
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

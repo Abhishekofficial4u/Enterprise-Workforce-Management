@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'https://enterprise-workforce-management.onrender.com/api/v1/recruitment';
+const API_URL = 'http://localhost:5000/api/v1/recruitment';
 
 // Interceptor to add auth token
 axios.interceptors.request.use((config) => {

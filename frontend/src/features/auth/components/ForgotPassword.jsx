@@ -9,15 +9,20 @@ const ForgotPassword = () => {
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
 
+    const [resetLink, setResetLink] = useState('');
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setStatus('loading');
         setMessage('');
 
         try {
-            await forgotPassword(email);
+            const res = await forgotPassword(email);
             setStatus('success');
             setMessage('A password reset link has been sent to your email.');
+            if (res.resetUrl) {
+                setResetLink(res.resetUrl);
+            }
         } catch (error) {
             setStatus('error');
             setMessage(error.response?.data?.message || 'Error sending password reset email');
@@ -36,6 +41,16 @@ const ForgotPassword = () => {
                 {status === 'success' ? (
                     <div style={{ textAlign: 'center' }}>
                         <div className="alert-success" style={{ marginBottom: 20 }}>✅ {message}</div>
+                        {resetLink && (
+                            <div style={{ marginBottom: 20, padding: 15, background: 'var(--bg-card)', border: '1px solid var(--primary)', borderRadius: 8 }}>
+                                <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 10 }}>
+                                    (Fallback for blocked emails on Render free tier):
+                                </p>
+                                <a href={resetLink} style={{ wordBreak: 'break-all', color: 'var(--primary)', fontWeight: 500 }}>
+                                    {resetLink}
+                                </a>
+                            </div>
+                        )}
                         <Link to="/login" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 500 }}>
                             Return to Login
                         </Link>
