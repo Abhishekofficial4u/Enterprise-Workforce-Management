@@ -108,11 +108,13 @@ exports.updateLeaveStatus = async (req, res) => {
                     ? `Great news! Your ${leave.leaveType} request for ${leave.startDate.split('T')[0]} to ${leave.endDate.split('T')[0]} has been APPROVED.`
                     : `Your ${leave.leaveType} request for ${leave.startDate.split('T')[0]} to ${leave.endDate.split('T')[0]} has been ${status.toUpperCase()}.`;
 
-                await sendEmail({
+                sendEmail({
                     email: employeeForEmail.email,
                     subject: `Leave Request ${status} - Enterprise Workforce`,
                     message: message,
                     html: `<h3>Leave Request ${status}</h3><p>${message}</p>`
+                }).catch(emailErr => {
+                    console.error('Leave email failed to send:', emailErr);
                 });
             }
         } catch (emailErr) {

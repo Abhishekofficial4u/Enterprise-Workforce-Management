@@ -23,15 +23,15 @@ exports.createTicket = async (req, res) => {
 
         // Email Alert for High Priority
         if (priority === 'High' || priority === 'Critical') {
-            try {
-                await sendEmail({
-                    email: 'admin@ewm.com', // In real app, query IT admins
-                    subject: `[${priority} PRIORITY] New Ticket: ${subject}`,
-                    html: `<h3>New ${priority} Priority Ticket</h3><p><strong>Category:</strong> ${category}</p><p><strong>Description:</strong> ${description}</p>`
-                });
-            } catch (emailErr) {
-                console.error('Ticket alert email failed:', emailErr);
-            }
+            // Send email notification in background
+            sendEmail({
+                email: 'admin@ewm.com',
+                subject: `[${priority} Priority] New Helpdesk Ticket: ${subject}`,
+                message: `A new ${priority} priority ticket has been created.\n\nSubject: ${subject}\nCategory: ${category}\n\nDescription:\n${description}`,
+                html: `<h3>New ${priority} Priority Ticket</h3><p><strong>Subject:</strong> ${subject}</p><p><strong>Category:</strong> ${category}</p><p><strong>Description:</strong><br/>${description}</p>`
+            }).catch(emailErr => {
+                console.error('Ticket alert email failed to send:', emailErr);
+            });
         }
 
         res.status(201).json({ success: true, data: ticket });

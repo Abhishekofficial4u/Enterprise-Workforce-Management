@@ -19,17 +19,24 @@ const AddEmployeeModal = ({ onClose, onSuccess }) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const [createdCreds, setCreatedCreds] = useState(null);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
 
         try {
-            await createEmployee({
+            const res = await createEmployee({
                 ...formData,
                 salary: Number(formData.salary)
             });
-            onSuccess(); // Triggers a re-fetch and closes modal
+            // Show the credentials to the admin instead of closing immediately
+            setCreatedCreds({
+                email: formData.email,
+                password: res.tempPassword
+            });
+            setLoading(false);
         } catch (err) {
             setError(err.response?.data?.message || 'An error occurred while creating the employee.');
             setLoading(false);
@@ -107,6 +114,22 @@ const AddEmployeeModal = ({ onClose, onSuccess }) => {
                         </button>
                     </div>
                 </form>
+
+                {createdCreds && (
+                    <div style={{ marginTop: 20, padding: 15, background: 'var(--bg-card)', border: '1px solid var(--primary)', borderRadius: 8 }}>
+                        <h3 style={{ color: 'var(--primary)', marginBottom: 10 }}>✅ Employee Created!</h3>
+                        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 10 }}>
+                            An email has been sent to the employee. However, you can also copy their temporary credentials below:
+                        </p>
+                        <div style={{ fontFamily: 'monospace', fontSize: 14, background: '#111', padding: 10, borderRadius: 5 }}>
+                            <div><strong>Email:</strong> {createdCreds.email}</div>
+                            <div><strong>Password:</strong> {createdCreds.password}</div>
+                        </div>
+                        <button className="btn-primary" style={{ width: '100%', marginTop: 15 }} onClick={onSuccess}>
+                            Done
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

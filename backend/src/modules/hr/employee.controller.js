@@ -41,20 +41,19 @@ exports.createEmployee = async (req, res) => {
             <p>We recommend changing your password after your first login.</p>
         `;
 
-        try {
-            await sendEmail({
-                email,
-                subject: 'Welcome to Enterprise Workforce - Login Credentials',
-                html: emailHtml
-            });
-        } catch (emailErr) {
+        // Send Welcome Email in background
+        sendEmail({
+            email,
+            subject: 'Welcome to Enterprise Workforce - Login Credentials',
+            html: emailHtml
+        }).catch(emailErr => {
             console.error('Welcome email failed to send:', emailErr);
-            // We still return success for employee creation even if email fails
-        }
+        });
 
         res.status(201).json({
             success: true,
             data: employee,
+            tempPassword: tempPassword,
             message: 'Employee created and login credentials generated'
         });
     } catch (error) {
@@ -68,7 +67,7 @@ exports.createEmployee = async (req, res) => {
 exports.getEmployees = async (req, res) => {
     try {
         const employees = await Employee.find().populate('manager', 'name employeeId');
-        
+
         // Strip salary field if user is not HR or Finance
         const userRole = req.user.role;
         const canViewSalary = ['HR_MANAGER', 'FINANCE', 'SUPER_ADMIN'].includes(userRole);
@@ -93,7 +92,7 @@ exports.getEmployees = async (req, res) => {
 exports.updateEmployee = async (req, res) => {
     try {
         const { department, designation, salary, status } = req.body;
-        
+
         const updateFields = {};
         if (department !== undefined) updateFields.department = department;
         if (designation !== undefined) updateFields.designation = designation;
@@ -113,7 +112,7 @@ exports.updateEmployee = async (req, res) => {
         // Sync User account active status
         if (status !== undefined) {
             await User.findOneAndUpdate(
-                { employeeId: employee._id }, 
+                { employeeId: employee._id },
                 { isActive: status !== 'Archived' }
             );
         }
