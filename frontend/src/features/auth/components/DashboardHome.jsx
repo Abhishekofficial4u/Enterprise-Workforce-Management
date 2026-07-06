@@ -31,9 +31,9 @@ const modules = [
     { icon: '🎯', label: 'ATS Recruitment',  status: 'live', path: '/dashboard/recruitment' },
     { icon: '🏆', label: 'Performance',      status: 'live', path: '/dashboard/performance' },
     { icon: '🚀', label: 'Projects Kanban',  status: 'live', path: '/dashboard/projects' },
-    { icon: '🎫', label: 'Help Desk',        status: 'coming' },
-    { icon: '💻', label: 'Asset Management', status: 'coming' },
-    { icon: '📈', label: 'Reports',          status: 'coming' },
+    { icon: '🎫', label: 'Help Desk',        status: 'live', path: '/dashboard/helpdesk' },
+    { icon: '💻', label: 'Asset Management', status: 'live', path: '/dashboard/assets' },
+    { icon: '📈', label: 'Reports',          status: 'live', path: '/dashboard/reports' },
     { icon: '🤖', label: 'AI Assistant',     status: 'coming' },
 ];
 
@@ -109,8 +109,8 @@ const DashboardHome = () => {
             { icon: '📋', label: 'Review Leave', onClick: () => navigate('/dashboard/leave') },
             { icon: '💰', label: 'Run Payroll', onClick: () => navigate('/dashboard/payroll') },
             { icon: '🎯', label: 'Post Job', onClick: () => navigate('/dashboard/recruitment') },
-            { icon: '📊', label: 'Reports' },
-            { icon: '🤖', label: 'AI Chat' },
+            { icon: '📊', label: 'Reports', onClick: () => navigate('/dashboard/reports') },
+            { icon: '🤖', label: 'AI Chat', onClick: () => navigate('/dashboard/ai-assistant') },
         ];
     } else {
         const totalLeave = userProfile?.leaveBalance ? 

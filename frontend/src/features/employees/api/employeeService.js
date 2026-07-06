@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api/v1/hr/employees';
+const API_URL = 'https://enterprise-workforce-management.onrender.com/api/v1/hr/employees';
 
 // Helper to get auth header
 const getAuthHeader = () => {

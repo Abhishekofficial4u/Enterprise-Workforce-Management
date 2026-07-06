@@ -31,7 +31,7 @@ const AiAssistant = () => {
 
         try {
             const token = localStorage.getItem('userToken');
-            const res = await axios.post('http://localhost:5000/api/v1/ai/chat', 
+            const res = await axios.post('https://enterprise-workforce-management.onrender.com/api/v1/ai/chat', 
                 { message: userMsg.text },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
