@@ -1,0 +1,147 @@
+.perf-container {
+    padding: 24px 32px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.perf-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.perf-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.perf-header p {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.perf-content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.reviews-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 24px;
+    padding-bottom: 24px;
+}
+
+.review-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+.review-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.review-cycle {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.review-emp-name {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.overall-score {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--primary);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 24px;
+    font-weight: 700;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.overall-score span {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.radar-chart-container {
+    margin: -20px 0;
+}
+
+.review-feedback {
+    background: var(--bg-dark);
+    padding: 16px;
+    border-radius: 8px;
+    margin-top: 16px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    flex: 1;
+}
+
+.review-feedback strong {
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 8px;
+}
+
+.review-feedback p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+.review-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.status-submitted {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.status-acknowledged {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+/* KPI Sliders */
+.kpi-row {
+    margin-bottom: 16px;
+}
+.kpi-row label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+.kpi-row input[type="range"] {
+    width: 100%;
+    accent-color: var(--primary);
+}

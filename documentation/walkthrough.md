@@ -17,6 +17,14 @@ I created two new domain folders `src/modules/org` and `src/modules/notification
 
 This document tracks our implementation progress.
 
+## Newly Implemented: Performance Management & KPIs
+The Performance Management module is now live!
+- **Employee View**: Employees can view their historical performance scores. Their skills (Quality, Communication, Punctuality, Teamwork, Initiative) are visualized using a dynamic interactive Radar/Spider chart. Employees can "Acknowledge" a submitted review.
+- **HR/Manager View**: HR and Managers can view the entire company's performance metrics and create new reviews through an elegant modal.
+- **KPI Engine**: The backend automatically aggregates 1-to-5 KPI scores into an overall performance score for easy comparison.
+
+---
+
 ## Newly Implemented: Recruitment & ATS Module
 The Applicant Tracking System is now live!
 - **Jobs Dashboard**: Create and manage job postings across different departments and locations.

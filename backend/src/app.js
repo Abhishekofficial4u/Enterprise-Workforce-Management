@@ -31,7 +31,12 @@ const timePayrollRoutes = require('./modules/time-payroll/time-payroll.routes');
 const orgRoutes = require('./modules/org/org.routes');
 const projectRoutes = require('./modules/projects/project.routes');
 const recruitmentRoutes = require('./modules/recruitment/recruitment.routes');
+const performanceRoutes = require('./modules/performance/performance.routes');
 const notificationRoutes = require('./modules/notifications/notification.routes');
+const helpdeskRoutes = require('./modules/helpdesk/helpdesk.routes');
+const assetRoutes = require('./modules/assets/asset.routes');
+const reportRoutes = require('./modules/reports/report.routes');
+const aiRoutes = require('./modules/ai/ai.routes');
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/hr', hrRoutes);
@@ -39,7 +44,12 @@ app.use('/api/v1/time-payroll', timePayrollRoutes);
 app.use('/api/v1/org', orgRoutes);
 app.use('/api/v1/projects', projectRoutes);
 app.use('/api/v1/recruitment', recruitmentRoutes);
+app.use('/api/v1/performance', performanceRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
+app.use('/api/v1/helpdesk', helpdeskRoutes);
+app.use('/api/v1/assets', assetRoutes);
+app.use('/api/v1/reports', reportRoutes);
+app.use('/api/v1/ai', aiRoutes);
 
 // Start Server
 const PORT = process.env.PORT || 5000;

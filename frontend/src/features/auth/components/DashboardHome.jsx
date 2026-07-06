@@ -24,11 +24,17 @@ const recentActivity = [
 ];
 
 const modules = [
-    { icon: '🔐', label: 'Authentication',  status: 'live' },
-    { icon: '👥', label: 'HR Management',   status: 'live' },
-    { icon: '📅', label: 'Attendance',      status: 'coming' },
-    { icon: '💰', label: 'Payroll',         status: 'coming' },
-    { icon: '🤖', label: 'AI Assistant',    status: 'coming' },
+    { icon: '🔐', label: 'Auth & Security',  status: 'live', path: '/dashboard/vault' },
+    { icon: '👥', label: 'HR Management',    status: 'live', path: '/dashboard/employees' },
+    { icon: '📅', label: 'Time & Attendance',status: 'live', path: '/dashboard/attendance' },
+    { icon: '💰', label: 'Payroll & Leave',  status: 'live', path: '/dashboard/payroll' },
+    { icon: '🎯', label: 'ATS Recruitment',  status: 'live', path: '/dashboard/recruitment' },
+    { icon: '🏆', label: 'Performance',      status: 'live', path: '/dashboard/performance' },
+    { icon: '🚀', label: 'Projects Kanban',  status: 'live', path: '/dashboard/projects' },
+    { icon: '🎫', label: 'Help Desk',        status: 'coming' },
+    { icon: '💻', label: 'Asset Management', status: 'coming' },
+    { icon: '📈', label: 'Reports',          status: 'coming' },
+    { icon: '🤖', label: 'AI Assistant',     status: 'coming' },
 ];
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -102,13 +108,17 @@ const DashboardHome = () => {
             { icon: '➕', label: 'Add Employee' },
             { icon: '📋', label: 'Review Leave', onClick: () => navigate('/dashboard/leave') },
             { icon: '💰', label: 'Run Payroll', onClick: () => navigate('/dashboard/payroll') },
-            { icon: '🎯', label: 'Post Job' },
+            { icon: '🎯', label: 'Post Job', onClick: () => navigate('/dashboard/recruitment') },
             { icon: '📊', label: 'Reports' },
             { icon: '🤖', label: 'AI Chat' },
         ];
     } else {
+        const totalLeave = userProfile?.leaveBalance ? 
+            (userProfile.leaveBalance.casual || 0) + (userProfile.leaveBalance.sick || 0) + (userProfile.leaveBalance.earned || 0) 
+            : 0;
+
         statCards = [
-            { label: 'My Leave Balance', value: '18', icon: '🌴', color: 'indigo', change: 'Available days', upDown: 'up' },
+            { label: 'My Leave Balance', value: totalLeave.toString(), icon: '🌴', color: 'indigo', change: 'Available days', upDown: 'up' },
             { label: 'Hours This Week',  value: '36', icon: '⏱️', color: 'green',  change: '4 hours remaining', upDown: 'up' },
             { label: 'Pending Approvals',value: '1',  icon: '📋', color: 'amber',  change: 'Sick Leave',    upDown: 'down' },
             { label: 'My Tickets',       value: '0',  icon: '🎫', color: 'red',    change: 'All resolved',  upDown: 'up' },
@@ -122,7 +132,7 @@ const DashboardHome = () => {
             },
             { icon: '📋', label: 'Apply Leave', onClick: () => navigate('/dashboard/leave') },
             { icon: '💰', label: 'Payslips', onClick: () => navigate('/dashboard/payroll') },
-            { icon: '🎫', label: 'IT Help' },
+            { icon: '🎫', label: 'IT Help', onClick: () => navigate('/dashboard/helpdesk') },
         ];
     }
 
@@ -226,7 +236,7 @@ const DashboardHome = () => {
                         </div>
                         <div className="module-pills">
                             {modules.map(m => (
-                                <div key={m.label} className="module-pill">
+                                <div key={m.label} className="module-pill" onClick={() => m.status === 'live' && navigate(m.path || '#')} style={{ cursor: m.status === 'live' ? 'pointer' : 'default' }}>
                                     <span className="module-pill-icon">{m.icon}</span>
                                     <span className="module-pill-label">{m.label}</span>
                                     <span className={`pill-status ${m.status}`}>

@@ -5,13 +5,18 @@ import Login from './features/auth/components/Login';
 import DashboardHome from './features/auth/components/DashboardHome';
 import Employees from './features/employees/Employees';
 import Profile from './features/employees/Profile';
+import CredentialsVault from './features/employees/CredentialsVault';
 import Attendance from './features/attendance/Attendance';
 import Payroll from './features/payroll/Payroll';
 import Leave from './features/payroll/Leave';
 import ProjectsHome from './features/projects/ProjectsHome';
 import ProjectKanban from './features/projects/components/ProjectKanban';
 import RecruitmentHome from './features/recruitment/RecruitmentHome';
-import ComingSoon from './components/ComingSoon';
+import PerformanceHome from './features/performance/PerformanceHome';
+import HelpDesk from './features/helpdesk/HelpDesk';
+import Assets from './features/assets/Assets';
+import Reports from './features/reports/Reports';
+import AiAssistant from './features/ai/AiAssistant';
 
 // Guard: redirect to login if no token
 const PrivateRoute = ({ children }) => {
@@ -44,6 +49,9 @@ function App() {
                 
                 {/* HR Only */}
                 <Route path="/dashboard/employees"   element={<RoleWrap roles={['HR_MANAGER', 'SUPER_ADMIN']}><Employees /></RoleWrap>} />
+                <Route path="/dashboard/vault"       element={<RoleWrap roles={['SUPER_ADMIN']}><CredentialsVault /></RoleWrap>} />
+                <Route path="/dashboard/reports"     element={<RoleWrap roles={['SUPER_ADMIN', 'HR_MANAGER']}><Reports /></RoleWrap>} />
+                <Route path="/dashboard/ai-assistant" element={<Wrap><AiAssistant /></Wrap>} />
                 
                 {/* Finance/Admin Only */}
                 <Route path="/dashboard/payroll"     element={<Wrap><Payroll /></Wrap>} />
@@ -54,13 +62,11 @@ function App() {
 
                 {/* Phase 2 Placeholders - Restricted for now */}
                 <Route path="/dashboard/recruitment" element={<RoleWrap roles={['HR_MANAGER', 'SUPER_ADMIN']}><RecruitmentHome /></RoleWrap>} />
-                <Route path="/dashboard/performance" element={<RoleWrap roles={['HR_MANAGER', 'SUPER_ADMIN']}><ComingSoon title="Performance Management" icon="🏆" description="Goals, KPIs, quarterly reviews, and performance ratings for all employees." /></RoleWrap>} />
+                <Route path="/dashboard/performance" element={<Wrap><PerformanceHome /></Wrap>} />
                 <Route path="/dashboard/projects"    element={<Wrap><ProjectsHome /></Wrap>} />
                 <Route path="/dashboard/projects/:id" element={<Wrap><ProjectKanban /></Wrap>} />
-                <Route path="/dashboard/helpdesk"    element={<Wrap><ComingSoon title="Help Desk" icon="🎫" description="IT support ticketing with priority routing and resolution tracking." /></Wrap>} />
-                <Route path="/dashboard/assets"      element={<RoleWrap roles={['IT_ADMIN', 'SUPER_ADMIN']}><ComingSoon title="Asset Management" icon="💻" description="Company asset inventory, assignment tracking and maintenance records." /></RoleWrap>} />
-                <Route path="/dashboard/ai-assistant"element={<Wrap><ComingSoon title="AI Operations Assistant" icon="🤖" description="AI-powered HR chatbot for policy Q&A, leave queries and resume analysis." /></Wrap>} />
-                <Route path="/dashboard/reports"     element={<RoleWrap roles={['SUPER_ADMIN']}><ComingSoon title="Reports & Analytics" icon="📈" description="Advanced cross-module analytics with exportable charts and insights." /></RoleWrap>} />
+                <Route path="/dashboard/helpdesk"    element={<Wrap><HelpDesk /></Wrap>} />
+                <Route path="/dashboard/assets"      element={<RoleWrap roles={['IT_ADMIN', 'SUPER_ADMIN']}><Assets /></RoleWrap>} />
 
                 {/* Default redirect to Landing Page instead of Login */}
                 <Route path="*" element={<Navigate to="/" replace />} />

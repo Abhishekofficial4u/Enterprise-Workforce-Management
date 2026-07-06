@@ -31,8 +31,8 @@ const Login = () => {
             {/* Left Info Panel */}
             <div className="login-left">
                 <div className="login-brand">
-                    <div className="brand-icon">🏢</div>
-                    <span className="brand-name">EnterpriseWFM</span>
+                    <img src="/logo.png" alt="EWM Logo" style={{ width: '40px', height: '40px', objectFit: 'contain', borderRadius: '8px' }} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }} />
+                    <span className="brand-name">EWM</span>
                 </div>
 
                 <div className="login-tagline">

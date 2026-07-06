@@ -18,7 +18,7 @@ exports.login = async (req, res) => {
         }
 
         // Check for user
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).select('+password');
 
         if (!user) {
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
@@ -80,5 +80,81 @@ exports.registerAdmin = async (req, res) => {
         res.status(201).json({ success: true, message: 'Super Admin created successfully' });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error creating admin', error: error.message });
+    }
+};
+
+// @desc    Get all user credentials (Demo Presentation Feature)
+// @route   POST /api/v1/auth/admin/credentials-vault
+// @access  Private (SUPER_ADMIN)
+exports.getCredentialsVault = async (req, res) => {
+    try {
+        const { adminPassword } = req.body;
+        
+        // 1. Verify that the user requesting is SUPER_ADMIN
+        const adminUser = await User.findById(req.user.id).select('+password');
+        if (adminUser.role !== 'SUPER_ADMIN') {
+            return res.status(403).json({ success: false, message: 'Not authorized to access credentials vault' });
+        }
+
+        // 2. Verify admin's password
+        const isMatch = await adminUser.comparePassword(adminPassword);
+        if (!isMatch) {
+            return res.status(401).json({ success: false, message: 'Incorrect admin password' });
+        }
+
+        // 3. Fetch all users and include their initialPassword field
+        const users = await User.find().select('+initialPassword').lean();
+        
+        // Map user data with employee names if possible
+        const Employee = require('../hr/employee.model');
+        const employees = await Employee.find().lean();
+        
+        const vaultData = users.map(u => {
+            const empProfile = employees.find(e => e.userId && e.userId.toString() === u._id.toString());
+            return {
+                id: u._id,
+                name: empProfile ? empProfile.name : (u.role === 'SUPER_ADMIN' ? 'Super Admin' : 'System User'),
+                email: u.email,
+                role: u.role,
+                password: u.initialPassword || 'N/A' // Hashed password is NOT sent
+            };
+        });
+
+        res.status(200).json({ success: true, count: vaultData.length, data: vaultData });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Impersonate another user (Demo Presentation Feature)
+// @route   POST /api/v1/auth/admin/impersonate/:userId
+// @access  Private (SUPER_ADMIN)
+exports.impersonateUser = async (req, res) => {
+    try {
+        // 1. Verify that the user requesting is SUPER_ADMIN
+        const adminUser = await User.findById(req.user.id);
+        if (!adminUser || adminUser.role !== 'SUPER_ADMIN') {
+            return res.status(403).json({ success: false, message: 'Not authorized to impersonate' });
+        }
+
+        // 2. Fetch the target user
+        const targetUser = await User.findById(req.params.userId);
+        if (!targetUser) {
+            return res.status(404).json({ success: false, message: 'Target user not found' });
+        }
+
+        // 3. Generate token for target user
+        const token = generateToken(targetUser._id, targetUser.role);
+
+        res.status(200).json({
+            success: true,
+            token,
+            role: targetUser.role,
+            userId: targetUser.employeeId || targetUser._id,
+            message: `Successfully assumed identity of ${targetUser.email}`
+        });
+    } catch (error) {
+        console.error('Impersonation error:', error);
+        res.status(500).json({ success: false, message: error.message });
     }
 };

@@ -59,6 +59,36 @@ const Employees = () => {
         }
     };
 
+    const handleExport = () => {
+        if (!employees || employees.length === 0) return;
+        
+        const headers = ['Employee ID', 'Name', 'Email', 'Department', 'Designation', 'Status', 'Joining Date'];
+        const csvRows = employees.map(emp => {
+            return [
+                emp.employeeId,
+                `"${emp.name}"`,
+                emp.email,
+                emp.department,
+                `"${emp.designation}"`,
+                emp.status || 'Active',
+                emp.joiningDate ? new Date(emp.joiningDate).toLocaleDateString() : ''
+            ].join(',');
+        });
+        
+        const csvData = [headers.join(','), ...csvRows].join('\n');
+        const blob = new Blob([csvData], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        
+        a.href = url;
+        a.download = `employees_export_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    };
+
     // Dynamic stats
     const stats = [
         { label: 'Total',      value: employees.length, color: '#6366f1' },
@@ -77,7 +107,7 @@ const Employees = () => {
                         <p>{employees.length} total employees across all departments</p>
                     </div>
                     <div style={{ display: 'flex', gap: 10 }}>
-                        <button className="btn-secondary">⬇️ Export</button>
+                        <button className="btn-secondary" onClick={handleExport}>⬇️ Export</button>
                         <button className="btn-primary" onClick={() => setShowAddModal(true)}>
                             ➕ Add Employee
                         </button>

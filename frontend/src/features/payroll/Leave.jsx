@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import { applyLeave, getMyLeaves, getAllLeaves, updateLeaveStatus } from './api/leaveService';
+import { applyLeave, getMyLeaves, getAllLeaves, updateLeaveStatus, getMyLeaveBalance } from './api/leaveService';
 import '../../components/shared.css';
 
 const Leave = () => {
@@ -10,6 +10,7 @@ const Leave = () => {
     const [leaves, setLeaves] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [balances, setBalances] = useState({ casual: 0, sick: 0, earned: 0 });
 
     // Apply Leave Form State
     const [leaveType, setLeaveType] = useState('Casual Leave');
@@ -31,6 +32,8 @@ const Leave = () => {
             } else {
                 const res = await getMyLeaves();
                 setLeaves(res.data);
+                const balanceRes = await getMyLeaveBalance();
+                setBalances(balanceRes.data);
             }
         } catch (err) {
             setError('Failed to load leave data.');
@@ -71,6 +74,24 @@ const Leave = () => {
             <div className="shared-container">
                 {error && <div className="alert-error">{error}</div>}
 
+                {/* Leave Balances Section */}
+                {!isAdmin && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
+                        <div className="card" style={{ padding: '24px', textAlign: 'center', background: 'rgba(255, 255, 255, 0.05)' }}>
+                            <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Casual Leave</div>
+                            <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-primary)', marginTop: '8px' }}>{balances.casual}</div>
+                        </div>
+                        <div className="card" style={{ padding: '24px', textAlign: 'center', background: 'rgba(255, 255, 255, 0.05)' }}>
+                            <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Sick Leave</div>
+                            <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-primary)', marginTop: '8px' }}>{balances.sick}</div>
+                        </div>
+                        <div className="card" style={{ padding: '24px', textAlign: 'center', background: 'rgba(255, 255, 255, 0.05)' }}>
+                            <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Earned Leave</div>
+                            <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-primary)', marginTop: '8px' }}>{balances.earned}</div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Employee Request Form */}
                 {!isAdmin && (
                     <div className="card" style={{ marginBottom: '24px' }}>
@@ -81,9 +102,9 @@ const Leave = () => {
                             <div className="form-field" style={{ marginBottom: 0 }}>
                                 <label>Leave Type</label>
                                 <select value={leaveType} onChange={(e) => setLeaveType(e.target.value)} required>
-                                    <option>Casual Leave</option>
-                                    <option>Sick Leave</option>
-                                    <option>Earned Leave</option>
+                                    <option disabled={balances.casual === 0}>Casual Leave</option>
+                                    <option disabled={balances.sick === 0}>Sick Leave</option>
+                                    <option disabled={balances.earned === 0}>Earned Leave</option>
                                     <option>Maternity Leave</option>
                                     <option>Work From Home</option>
                                 </select>

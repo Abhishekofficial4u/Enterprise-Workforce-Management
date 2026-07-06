@@ -17,7 +17,8 @@ router.get('/attendance/my', attendanceController.getMyAttendance);
 router.get('/attendance/daily', authorize('HR_MANAGER', 'SUPER_ADMIN'), attendanceController.getAllAttendance);
 
 // ---- LEAVE ROUTES ----
-router.post('/leave', leaveController.applyLeave);
+router.post('/leave', authorize('EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'SUPER_ADMIN'), leaveController.applyLeave);
+router.get('/leave/balance', leaveController.getMyLeaveBalance);
 router.get('/leave/my', leaveController.getMyLeaves);
 router.get('/leave/all', authorize('MANAGER', 'HR_MANAGER', 'SUPER_ADMIN'), leaveController.getAllLeaves);
 router.put('/leave/:id', authorize('MANAGER', 'HR_MANAGER', 'SUPER_ADMIN'), leaveController.updateLeaveStatus);

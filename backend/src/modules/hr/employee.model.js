@@ -83,6 +83,12 @@ const EmployeeSchema = new mongoose.Schema({
             duration: String
         }],
         default: []
+    },
+    // ---- Leave Balance Fields ----
+    leaveBalance: {
+        casual: { type: Number, default: 15 },
+        sick: { type: Number, default: 10 },
+        earned: { type: Number, default: 15 }
     }
 }, { timestamps: true });
 

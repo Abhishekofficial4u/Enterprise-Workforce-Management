@@ -14,6 +14,34 @@ exports.applyLeave = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Start date cannot be after end date' });
         }
 
+        const Employee = require('../hr/employee.model');
+        const employee = await Employee.findById(employeeId);
+        if (!employee) return res.status(404).json({ success: false, message: 'Employee not found' });
+
+        // Calculate days
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const diffTime = Math.abs(end - start);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end
+
+        // Map leaveType to balance field
+        let balanceField = null;
+        if (leaveType === 'Casual Leave') balanceField = 'casual';
+        else if (leaveType === 'Sick Leave') balanceField = 'sick';
+        else if (leaveType === 'Earned Leave') balanceField = 'earned';
+
+        if (balanceField) {
+            if (employee.leaveBalance[balanceField] < diffDays) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: `Insufficient ${leaveType} balance. You requested ${diffDays} days but only have ${employee.leaveBalance[balanceField]} left.` 
+                });
+            }
+            // Deduct balance
+            employee.leaveBalance[balanceField] -= diffDays;
+            await employee.save();
+        }
+
         const leave = await Leave.create({
             employeeId,
             leaveType,
@@ -41,6 +69,29 @@ exports.updateLeaveStatus = async (req, res) => {
 
         const leave = await Leave.findById(req.params.id);
         if (!leave) return res.status(404).json({ success: false, message: 'Leave request not found' });
+
+        // Refund balance if rejected or cancelled, and it wasn't already rejected/cancelled
+        if ((status === 'Rejected' || status === 'Cancelled') && leave.status !== 'Rejected' && leave.status !== 'Cancelled') {
+            const Employee = require('../hr/employee.model');
+            const employee = await Employee.findById(leave.employeeId);
+            
+            if (employee) {
+                const start = new Date(leave.startDate);
+                const end = new Date(leave.endDate);
+                const diffTime = Math.abs(end - start);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                
+                let balanceField = null;
+                if (leave.leaveType === 'Casual Leave') balanceField = 'casual';
+                else if (leave.leaveType === 'Sick Leave') balanceField = 'sick';
+                else if (leave.leaveType === 'Earned Leave') balanceField = 'earned';
+
+                if (balanceField) {
+                    employee.leaveBalance[balanceField] += diffDays;
+                    await employee.save();
+                }
+            }
+        }
 
         leave.status = status;
         leave.approvedBy = req.user.employeeId;
@@ -77,6 +128,27 @@ exports.getAllLeaves = async (req, res) => {
             .sort({ createdAt: -1 });
             
         res.status(200).json({ success: true, count: leaves.length, data: leaves });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Get my leave balances
+// @route   GET /api/v1/time-payroll/leave/balance
+// @access  Private
+exports.getMyLeaveBalance = async (req, res) => {
+    try {
+        const Employee = require('../hr/employee.model');
+        const employeeId = req.user.employeeId;
+        if (!employeeId) return res.status(400).json({ success: false, message: 'No employee profile' });
+
+        const employee = await Employee.findById(employeeId);
+        if (!employee) return res.status(404).json({ success: false, message: 'Employee not found' });
+
+        res.status(200).json({ 
+            success: true, 
+            data: employee.leaveBalance || { casual: 0, sick: 0, earned: 0 } 
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

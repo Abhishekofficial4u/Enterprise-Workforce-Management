@@ -21,6 +21,11 @@ export const getMyLeaves = async () => {
     return response.data;
 };
 
+export const getMyLeaveBalance = async () => {
+    const response = await axios.get(`${API_URL}/balance`, getAuthHeader());
+    return response.data;
+};
+
 export const getAllLeaves = async () => {
     const response = await axios.get(`${API_URL}/all`, getAuthHeader());
     return response.data;
