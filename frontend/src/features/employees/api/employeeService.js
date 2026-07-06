@@ -23,8 +23,8 @@ export const createEmployee = async (employeeData) => {
     return response.data;
 };
 
-export const updateEmployee = async (id, employeeData) => {
-    const response = await axios.put(`${API_URL}/${id}`, employeeData, getAuthHeader());
+export const updateEmployee = async (id, data) => {
+    const response = await axios.put(`${API_URL}/${id}`, data, getAuthHeader());
     return response.data;
 };
 
@@ -42,5 +42,10 @@ export const updateMyProfile = async (profileData) => {
 // Ready for when we implement Archive
 export const archiveEmployee = async (id) => {
     const response = await axios.delete(`${API_URL}/${id}`, getAuthHeader());
+    return response.data;
+};
+
+export const deleteEmployee = async (id) => {
+    const response = await axios.delete(`${API_URL}/${id}/permanent`, getAuthHeader());
     return response.data;
 };

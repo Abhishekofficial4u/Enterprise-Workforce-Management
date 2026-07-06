@@ -3,7 +3,7 @@ import DashboardLayout from '../../layouts/DashboardLayout';
 import AddEmployeeModal from './components/AddEmployeeModal';
 import EditEmployeeModal from './components/EditEmployeeModal';
 import ViewEmployeeModal from './components/ViewEmployeeModal';
-import { getEmployees, archiveEmployee } from './api/employeeService';
+import { getEmployees, archiveEmployee, deleteEmployee } from './api/employeeService';
 import '../../components/shared.css';
 
 const avatarColors = ['#6366f1','#0ea5e9','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899'];
@@ -55,6 +55,17 @@ const Employees = () => {
                 fetchEmployees(); // Refresh list
             } catch (err) {
                 alert(err.response?.data?.message || 'Failed to archive employee');
+            }
+        }
+    };
+
+    const handleDelete = async (emp) => {
+        if (window.confirm(`CRITICAL WARNING: Are you sure you want to PERMANENTLY delete ${emp.name}? This action cannot be undone.`)) {
+            try {
+                await deleteEmployee(emp._id);
+                fetchEmployees(); // Refresh list
+            } catch (err) {
+                alert(err.response?.data?.message || 'Failed to delete employee');
             }
         }
     };
@@ -205,7 +216,11 @@ const Employees = () => {
                                                 <div className="action-btns">
                                                     <div className="icon-btn" title="View" onClick={() => setViewEmployee(emp)}>👁️</div>
                                                     <div className="icon-btn" title="Edit" onClick={() => setEditEmployee(emp)}>✏️</div>
-                                                    <div className="icon-btn" title="Archive" onClick={() => handleArchive(emp)}>🗃️</div>
+                                                    {emp.status === 'Archived' ? (
+                                                        <div className="icon-btn" title="Permanently Delete" onClick={() => handleDelete(emp)}>🗑️</div>
+                                                    ) : (
+                                                        <div className="icon-btn" title="Archive" onClick={() => handleArchive(emp)}>🗃️</div>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>

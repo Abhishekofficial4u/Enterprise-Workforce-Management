@@ -148,6 +148,29 @@ exports.archiveEmployee = async (req, res) => {
     }
 };
 
+// @desc    Permanently Delete employee
+// @route   DELETE /api/v1/hr/employees/:id/permanent
+// @access  Private (SUPER_ADMIN)
+exports.deleteEmployee = async (req, res) => {
+    try {
+        const employee = await Employee.findById(req.params.id);
+
+        if (!employee) {
+            return res.status(404).json({ success: false, message: 'Employee not found' });
+        }
+
+        // Delete associated user account
+        await User.findOneAndDelete({ employeeId: req.params.id });
+
+        // Hard delete the employee
+        await Employee.findByIdAndDelete(req.params.id);
+
+        res.status(200).json({ success: true, message: 'Employee permanently deleted' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 // @desc    Get logged in employee profile
 // @route   GET /api/v1/hr/employees/me
 // @access  Private

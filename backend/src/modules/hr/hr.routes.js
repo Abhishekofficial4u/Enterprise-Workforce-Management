@@ -19,4 +19,7 @@ router.route('/employees/:id')
     .put(authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), employeeController.updateEmployee)
     .delete(authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), employeeController.archiveEmployee);
 
+router.route('/employees/:id/permanent')
+    .delete(authorize('SUPER_ADMIN'), employeeController.deleteEmployee);
+
 module.exports = router;
