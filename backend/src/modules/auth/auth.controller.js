@@ -238,3 +238,42 @@ exports.impersonateUser = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+// @desc    Test Email functionality on Live Server
+// @route   GET /api/v1/auth/test-email
+// @access  Public
+exports.testEmailRoute = async (req, res) => {
+    try {
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
+            }
+        });
+
+        const info = await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: process.env.EMAIL_USER,
+            subject: 'Render Live Test Email',
+            text: 'If you see this, the Render server successfully connected to Gmail!'
+        });
+
+        res.status(200).json({
+            success: true,
+            message: 'Email sent successfully from Render!',
+            info: info.response,
+            user: process.env.EMAIL_USER
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Failed to send email from Render',
+            error: error.message,
+            stack: error.stack,
+            user: process.env.EMAIL_USER,
+            passLength: process.env.EMAIL_PASS ? process.env.EMAIL_PASS.length : 0
+        });
+    }
+};

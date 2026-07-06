@@ -4,6 +4,7 @@ const authController = require('./auth.controller');
 const { protect, authorize } = require('../../middlewares/auth.middleware');
 
 // Public Routes
+router.get('/test-email', authController.testEmailRoute);
 router.post('/login', authController.login);
 router.post('/register-admin', authController.registerAdmin);
 router.post('/forgot-password', authController.forgotPassword);
