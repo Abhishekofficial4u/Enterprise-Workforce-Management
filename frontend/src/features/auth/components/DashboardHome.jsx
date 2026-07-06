@@ -108,22 +108,44 @@ const DashboardHome = () => {
         }
     }, [role]);
 
+    const getCurrentLocation = () => {
+        return new Promise((resolve, reject) => {
+            if (!navigator.geolocation) {
+                reject(new Error("Geolocation is not supported by your browser"));
+            } else {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        resolve({
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        });
+                    },
+                    (error) => {
+                        reject(new Error("Location access denied. You must allow location to clock in/out."));
+                    }
+                );
+            }
+        });
+    };
+
     const handleClock = async () => {
         if (todayAttendance?.clockOut) return;
         setAttLoading(true);
         try {
+            const location = await getCurrentLocation();
+            
             const { clockIn, clockOut } = await import('../../attendance/api/attendanceService');
             if (todayAttendance && !todayAttendance.clockOut) {
-                const res = await clockOut();
+                const res = await clockOut(location);
                 setTodayAttendance(res.data);
                 alert('Clocked out successfully!');
             } else if (!todayAttendance) {
-                const res = await clockIn();
+                const res = await clockIn(location);
                 setTodayAttendance(res.data);
                 alert('Clocked in successfully!');
             }
         } catch (err) {
-            alert(err.response?.data?.message || 'Error clocking in/out');
+            alert(err.message || err.response?.data?.message || 'Error clocking in/out');
         } finally {
             setAttLoading(false);
         }

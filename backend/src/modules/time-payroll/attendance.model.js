@@ -13,8 +13,16 @@ const AttendanceSchema = new mongoose.Schema({
     clockIn: {
         type: Date
     },
+    clockInLocation: {
+        lat: Number,
+        lng: Number
+    },
     clockOut: {
         type: Date
+    },
+    clockOutLocation: {
+        lat: Number,
+        lng: Number
     },
     workingHours: {
         type: Number,

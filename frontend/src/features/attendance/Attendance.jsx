@@ -169,9 +169,15 @@ const Attendance = () => {
                                             {isAdmin ? <td>{e.department}</td> : <td style={{fontWeight:500, color: 'var(--text-primary)'}}>{e.date}</td>}
                                             <td style={{ fontFamily: 'monospace', fontSize: 13.5, color: e.clockIn ? 'var(--text-primary)' : 'var(--text-muted)' }}>
                                                 {formatTime(e.clockIn)}
+                                                {isAdmin && e.clockInLocation && (
+                                                    <a href={`https://maps.google.com/?q=${e.clockInLocation.lat},${e.clockInLocation.lng}`} target="_blank" rel="noreferrer" title="View Map" style={{ marginLeft: 6, textDecoration: 'none' }}>📍</a>
+                                                )}
                                             </td>
                                             <td style={{ fontFamily: 'monospace', fontSize: 13.5, color: e.clockOut ? 'var(--text-primary)' : 'var(--text-muted)' }}>
                                                 {formatTime(e.clockOut)}
+                                                {isAdmin && e.clockOutLocation && (
+                                                    <a href={`https://maps.google.com/?q=${e.clockOutLocation.lat},${e.clockOutLocation.lng}`} target="_blank" rel="noreferrer" title="View Map" style={{ marginLeft: 6, textDecoration: 'none' }}>📍</a>
+                                                )}
                                             </td>
                                             <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
                                                 {e.workingHours ? `${e.workingHours}h` : '-'}

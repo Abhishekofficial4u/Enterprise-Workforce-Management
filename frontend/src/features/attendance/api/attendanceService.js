@@ -11,13 +11,13 @@ const getAuthHeader = () => {
     };
 };
 
-export const clockIn = async () => {
-    const response = await axios.post(`${API_URL}/clock-in`, {}, getAuthHeader());
+export const clockIn = async (location = {}) => {
+    const response = await axios.post(`${API_URL}/clock-in`, location, getAuthHeader());
     return response.data;
 };
 
-export const clockOut = async () => {
-    const response = await axios.post(`${API_URL}/clock-out`, {}, getAuthHeader());
+export const clockOut = async (location = {}) => {
+    const response = await axios.post(`${API_URL}/clock-out`, location, getAuthHeader());
     return response.data;
 };
 

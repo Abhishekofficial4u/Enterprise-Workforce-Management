@@ -8,6 +8,7 @@ exports.clockIn = async (req, res) => {
     try {
         const userId = req.user.id; // User ID from JWT
         const employeeId = req.user.employeeId;
+        const { lat, lng } = req.body;
 
         if (!employeeId) {
             return res.status(400).json({ success: false, message: 'User is not linked to an employee profile' });
@@ -25,6 +26,7 @@ exports.clockIn = async (req, res) => {
             employeeId,
             date: dateString,
             clockIn: new Date(),
+            clockInLocation: lat && lng ? { lat, lng } : undefined,
             status: 'Present' // Will adjust to Late in a real app based on office hours
         });
 
@@ -41,6 +43,8 @@ exports.clockOut = async (req, res) => {
     try {
         const employeeId = req.user.employeeId;
         if (!employeeId) return res.status(400).json({ success: false, message: 'No employee profile' });
+        
+        const { lat, lng } = req.body;
 
         const dateString = new Date().toISOString().split('T')[0];
         const attendance = await Attendance.findOne({ employeeId, date: dateString });
@@ -65,6 +69,9 @@ exports.clockOut = async (req, res) => {
         }
 
         attendance.clockOut = clockOutTime;
+        if (lat && lng) {
+            attendance.clockOutLocation = { lat, lng };
+        }
         attendance.workingHours = workingHours;
         attendance.overtime = overtime;
 
@@ -121,7 +128,9 @@ exports.getAllAttendance = async (req, res) => {
                 department: emp.department,
                 designation: emp.designation,
                 clockIn: record ? record.clockIn : null,
+                clockInLocation: record ? record.clockInLocation : null,
                 clockOut: record ? record.clockOut : null,
+                clockOutLocation: record ? record.clockOutLocation : null,
                 workingHours: record ? record.workingHours : 0,
                 overtime: record ? record.overtime : 0,
                 status: record ? record.status : 'Absent'
