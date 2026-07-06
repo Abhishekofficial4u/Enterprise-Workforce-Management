@@ -104,21 +104,21 @@ exports.forgotPassword = async (req, res) => {
         const resetUrl = `${req.headers.origin || 'http://localhost:3000'}/reset-password/${resetToken}`;
         const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
 
-        try {
-            await sendEmail({
-                email: user.email,
-                subject: 'Password reset token',
-                message
-            });
-
-            res.status(200).json({ success: true, message: 'Email sent' });
-        } catch (err) {
-            console.error(err);
+        // Send email in background
+        sendEmail({
+            email: user.email,
+            subject: 'Password reset token',
+            message
+        }).catch(async (err) => {
+            console.error('Failed to send reset email:', err);
+            // Optionally revert the token if we wanted to
             user.resetPasswordToken = undefined;
             user.resetPasswordExpire = undefined;
             await user.save({ validateBeforeSave: false });
-            return res.status(500).json({ success: false, message: 'Email could not be sent' });
-        }
+        });
+
+        // Respond immediately so UI doesn't hang
+        res.status(200).json({ success: true, message: 'If an account exists, a reset link was sent' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
