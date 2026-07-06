@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { login } from '../api/authService';
 import './Login.css';
 
@@ -93,16 +93,23 @@ const Login = () => {
                                 required
                             />
                         </div>
-                        <div className="form-field">
+                        <div className="form-field" style={{ marginBottom: 10 }}>
                             <label>Password</label>
-                            <input
-                                type="password"
+                            <input 
+                                type="password" 
+                                placeholder="••••••••" 
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                placeholder="••••••••"
                                 required
                             />
                         </div>
+
+                        <div style={{ textAlign: 'right', marginBottom: 20 }}>
+                            <Link to="/forgot-password" style={{ color: 'var(--primary)', textDecoration: 'none', fontSize: 13, fontWeight: 500 }}>
+                                Forgot Password?
+                            </Link>
+                        </div>
+
                         <button type="submit" className="login-submit-btn" disabled={loading}>
                             {loading ? 'Signing in...' : 'Sign In →'}
                         </button>

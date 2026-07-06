@@ -1,4 +1,5 @@
 const Leave = require('./leave.model');
+const sendEmail = require('../../utils/emailService');
 
 // @desc    Apply for leave
 // @route   POST /api/v1/time-payroll/leave
@@ -96,6 +97,27 @@ exports.updateLeaveStatus = async (req, res) => {
         leave.status = status;
         leave.approvedBy = req.user.employeeId;
         await leave.save();
+
+        // Send Email Notification
+        try {
+            const Employee = require('../hr/employee.model');
+            const employeeForEmail = await Employee.findById(leave.employeeId);
+            
+            if (employeeForEmail && employeeForEmail.email) {
+                const message = status === 'Approved' 
+                    ? `Great news! Your ${leave.leaveType} request for ${leave.startDate.split('T')[0]} to ${leave.endDate.split('T')[0]} has been APPROVED.`
+                    : `Your ${leave.leaveType} request for ${leave.startDate.split('T')[0]} to ${leave.endDate.split('T')[0]} has been ${status.toUpperCase()}.`;
+
+                await sendEmail({
+                    email: employeeForEmail.email,
+                    subject: `Leave Request ${status} - Enterprise Workforce`,
+                    message: message,
+                    html: `<h3>Leave Request ${status}</h3><p>${message}</p>`
+                });
+            }
+        } catch (emailErr) {
+            console.error('Leave email failed to send:', emailErr);
+        }
 
         res.status(200).json({ success: true, data: leave, message: `Leave ${status.toLowerCase()} successfully` });
     } catch (error) {

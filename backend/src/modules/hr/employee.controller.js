@@ -1,6 +1,7 @@
 const Employee = require('./employee.model');
 const User = require('../auth/user.model');
 const bcrypt = require('bcrypt');
+const sendEmail = require('../../utils/emailService');
 
 // @desc    Create a new employee
 // @route   POST /api/v1/hr/employees
@@ -20,10 +21,36 @@ exports.createEmployee = async (req, res) => {
         // Create the corresponding User account
         const user = await User.create({
             email,
-            password: tempPassword, // In real app, trigger welcome email with this
+            password: tempPassword,
+            initialPassword: tempPassword,
             role: 'EMPLOYEE',
             employeeId: employee._id
         });
+
+        // Send Welcome Email
+        const loginUrl = `${req.headers.origin || 'http://localhost:3000'}/login`;
+        const emailHtml = `
+            <h2>Welcome to the Team, ${name}!</h2>
+            <p>Your employee profile has been created in the Enterprise Workforce Management system.</p>
+            <p>You can log in to your dashboard here: <a href="${loginUrl}">${loginUrl}</a></p>
+            <p><strong>Your Temporary Credentials:</strong></p>
+            <ul>
+                <li>Email: ${email}</li>
+                <li>Password: ${tempPassword}</li>
+            </ul>
+            <p>We recommend changing your password after your first login.</p>
+        `;
+
+        try {
+            await sendEmail({
+                email,
+                subject: 'Welcome to Enterprise Workforce - Login Credentials',
+                html: emailHtml
+            });
+        } catch (emailErr) {
+            console.error('Welcome email failed to send:', emailErr);
+            // We still return success for employee creation even if email fails
+        }
 
         res.status(201).json({
             success: true,

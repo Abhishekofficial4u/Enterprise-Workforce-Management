@@ -1,4 +1,5 @@
 const Ticket = require('./ticket.model');
+const sendEmail = require('../../utils/emailService');
 
 // @desc    Create a new ticket
 // @route   POST /api/v1/helpdesk
@@ -19,6 +20,19 @@ exports.createTicket = async (req, res) => {
             category,
             priority
         });
+
+        // Email Alert for High Priority
+        if (priority === 'High' || priority === 'Critical') {
+            try {
+                await sendEmail({
+                    email: 'admin@ewm.com', // In real app, query IT admins
+                    subject: `[${priority} PRIORITY] New Ticket: ${subject}`,
+                    html: `<h3>New ${priority} Priority Ticket</h3><p><strong>Category:</strong> ${category}</p><p><strong>Description:</strong> ${description}</p>`
+                });
+            } catch (emailErr) {
+                console.error('Ticket alert email failed:', emailErr);
+            }
+        }
 
         res.status(201).json({ success: true, data: ticket });
     } catch (error) {

@@ -2,6 +2,8 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './features/auth/components/LandingPage';
 import Login from './features/auth/components/Login';
+import ForgotPassword from './features/auth/components/ForgotPassword';
+import ResetPassword from './features/auth/components/ResetPassword';
 import DashboardHome from './features/auth/components/DashboardHome';
 import Employees from './features/employees/Employees';
 import Profile from './features/employees/Profile';
@@ -42,6 +44,8 @@ function App() {
                 {/* Public Routes */}
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password/:token" element={<ResetPassword />} />
 
                 {/* Dashboard Routes */}
                 <Route path="/dashboard" element={<Wrap><DashboardHome /></Wrap>} />

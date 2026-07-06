@@ -1,5 +1,7 @@
 const User = require('./user.model');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const sendEmail = require('../../utils/emailService');
 
 // Generate JWT Token
 const generateToken = (userId, role) => {
@@ -80,6 +82,84 @@ exports.registerAdmin = async (req, res) => {
         res.status(201).json({ success: true, message: 'Super Admin created successfully' });
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error creating admin', error: error.message });
+    }
+};
+
+// @desc    Forgot Password
+// @route   POST /api/v1/auth/forgot-password
+// @access  Public
+exports.forgotPassword = async (req, res) => {
+    try {
+        const user = await User.findOne({ email: req.body.email });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'There is no user with that email' });
+        }
+
+        // Get reset token
+        const resetToken = user.getResetPasswordToken();
+        await user.save({ validateBeforeSave: false });
+
+        // Create reset URL
+        const resetUrl = `${req.headers.origin || 'http://localhost:3000'}/reset-password/${resetToken}`;
+        const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
+
+        try {
+            await sendEmail({
+                email: user.email,
+                subject: 'Password reset token',
+                message
+            });
+
+            res.status(200).json({ success: true, message: 'Email sent' });
+        } catch (err) {
+            console.error(err);
+            user.resetPasswordToken = undefined;
+            user.resetPasswordExpire = undefined;
+            await user.save({ validateBeforeSave: false });
+            return res.status(500).json({ success: false, message: 'Email could not be sent' });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Reset Password
+// @route   PUT /api/v1/auth/reset-password/:token
+// @access  Public
+exports.resetPassword = async (req, res) => {
+    try {
+        // Get hashed token
+        const resetPasswordToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+
+        const user = await User.findOne({
+            resetPasswordToken,
+            resetPasswordExpire: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.status(400).json({ success: false, message: 'Invalid token' });
+        }
+
+        // Set new password
+        user.password = req.body.password;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+        user.isLocked = false;
+        user.failedLoginAttempts = 0;
+        await user.save();
+
+        const token = generateToken(user._id, user.role);
+
+        res.status(200).json({
+            success: true,
+            token,
+            role: user.role,
+            userId: user.employeeId || user._id,
+            message: 'Password reset successfully'
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
