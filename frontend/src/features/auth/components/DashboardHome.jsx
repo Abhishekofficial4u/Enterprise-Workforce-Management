@@ -57,6 +57,14 @@ const DashboardHome = () => {
     const [todayAttendance, setTodayAttendance] = useState(null);
     const [attLoading, setAttLoading] = useState(false);
     const [userProfile, setUserProfile] = useState(null);
+    
+    // Real Data State for Admins
+    const [realStats, setRealStats] = useState({
+        totalEmployees: 0,
+        presentToday: 0,
+        leaveRequests: 0,
+        openTickets: 0
+    });
 
     useEffect(() => {
         import('../../employees/api/employeeService').then(({ getMyProfile }) => {
@@ -70,6 +78,33 @@ const DashboardHome = () => {
                     if (record) setTodayAttendance(record);
                 }).catch(console.error);
             });
+        }
+        if (role === 'SUPER_ADMIN' || role === 'HR_MANAGER') {
+            const fetchRealStats = async () => {
+                try {
+                    const { getAllEmployees } = await import('../../employees/api/employeeService');
+                    const { getAllAttendance } = await import('../../attendance/api/attendanceService');
+                    const { getAllLeaves } = await import('../../payroll/api/leaveService');
+                    const { getAllTickets } = await import('../../helpdesk/api/helpdeskService');
+
+                    const [empRes, attRes, leaveRes, tktRes] = await Promise.all([
+                        getAllEmployees(),
+                        getAllAttendance(new Date().toISOString().split('T')[0]),
+                        getAllLeaves(),
+                        getAllTickets()
+                    ]);
+
+                    setRealStats({
+                        totalEmployees: empRes.data.length,
+                        presentToday: attRes.data.filter(a => a.clockIn).length,
+                        leaveRequests: leaveRes.data.filter(l => l.status === 'Pending').length,
+                        openTickets: tktRes.data.filter(t => t.status === 'Open').length
+                    });
+                } catch (e) {
+                    console.error('Failed to fetch real stats', e);
+                }
+            };
+            fetchRealStats();
         }
     }, [role]);
 
@@ -98,11 +133,15 @@ const DashboardHome = () => {
     let quickActions = [];
 
     if (role === 'SUPER_ADMIN' || role === 'HR_MANAGER') {
+        const attRate = realStats.totalEmployees > 0 
+            ? Math.round((realStats.presentToday / realStats.totalEmployees) * 100) 
+            : 0;
+            
         statCards = [
-            { label: 'Total Employees', value: '248', icon: '👥', color: 'indigo', change: '↑ 12 this month', upDown: 'up' },
-            { label: 'Present Today',   value: '211', icon: '✅', color: 'green',  change: '85% attendance rate', upDown: 'up' },
-            { label: 'Leave Requests',  value: '14',  icon: '📋', color: 'amber',  change: '↓ 3 vs last week',    upDown: 'down' },
-            { label: 'Open Tickets',    value: '7',   icon: '🎫', color: 'red',    change: '2 critical',           upDown: 'down' },
+            { label: 'Total Employees', value: realStats.totalEmployees.toString(), icon: '👥', color: 'indigo', change: 'Live from DB', upDown: 'up' },
+            { label: 'Present Today',   value: realStats.presentToday.toString(), icon: '✅', color: 'green',  change: `${attRate}% attendance rate`, upDown: 'up' },
+            { label: 'Leave Requests',  value: realStats.leaveRequests.toString(),  icon: '📋', color: 'amber',  change: 'Pending approval',    upDown: 'down' },
+            { label: 'Open Tickets',    value: realStats.openTickets.toString(),   icon: '🎫', color: 'red',    change: 'Needs attention',           upDown: 'down' },
         ];
         quickActions = [
             { icon: '➕', label: 'Add Employee' },
