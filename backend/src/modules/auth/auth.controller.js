@@ -372,3 +372,49 @@ exports.seedRolesRoute = async (req, res) => {
         res.status(500).json({ success: false, message: 'Seeding failed', error: error.message });
     }
 };
+
+exports.createTestUsersRoute = async (req, res) => {
+    try {
+        const roles = await Role.find();
+        if (roles.length === 0) {
+            return res.status(400).json({ success: false, message: 'Please run /seed-roles first!' });
+        }
+
+        const roleMap = {};
+        roles.forEach(r => roleMap[r.name] = r._id);
+
+        const testUsers = [
+            { email: 'admin@ewm.com', name: 'System Admin', roleName: 'SUPER_ADMIN' },
+            { email: 'hr@ewm.com', name: 'HR Manager', roleName: 'HR_MANAGER' },
+            { email: 'finance@ewm.com', name: 'Finance Lead', roleName: 'FINANCE' },
+            { email: 'manager@ewm.com', name: 'Project Manager', roleName: 'MANAGER' },
+            { email: 'employee@ewm.com', name: 'Standard Employee', roleName: 'EMPLOYEE' }
+        ];
+
+        for (const tu of testUsers) {
+            let user = await User.findOne({ email: tu.email });
+            if (!user) {
+                user = new User({
+                    email: tu.email,
+                    password: 'Password123!',
+                    roles: [roleMap[tu.roleName]],
+                    isVerified: true
+                });
+                await user.save();
+            } else {
+                user.password = 'Password123!';
+                user.roles = [roleMap[tu.roleName]];
+                await user.save();
+            }
+        }
+
+        res.status(200).json({ 
+            success: true, 
+            message: 'Test users created/updated successfully!',
+            credentials: testUsers.map(tu => ({ email: tu.email, password: 'Password123!', role: tu.roleName }))
+        });
+    } catch (error) {
+        console.error('Error creating test users:', error);
+        res.status(500).json({ success: false, message: 'Failed to create test users', error: error.message });
+    }
+};
