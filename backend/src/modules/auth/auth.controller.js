@@ -1,4 +1,5 @@
 const User = require('./user.model');
+const Role = require('./role.model');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const sendEmail = require('../../utils/emailService');
@@ -293,5 +294,81 @@ exports.testEmailRoute = async (req, res) => {
             user: process.env.EMAIL_USER,
             passLength: process.env.EMAIL_PASS ? process.env.EMAIL_PASS.length : 0
         });
+    }
+};
+
+exports.seedRolesRoute = async (req, res) => {
+    try {
+        console.log('Seeding initial roles...');
+        await Role.deleteMany();
+
+        const rolesData = [
+            {
+                name: 'SUPER_ADMIN',
+                description: 'Full system access',
+                permissions: [
+                    'manage_users', 'manage_roles', 'view_all_data', 'manage_employees', 
+                    'approve_payroll', 'manage_projects', 'view_reports', 'manage_assets', 'manage_helpdesk'
+                ]
+            },
+            {
+                name: 'HR_MANAGER',
+                description: 'Human Resources Manager',
+                permissions: [
+                    'manage_employees', 'view_employees', 'manage_attendance', 'view_reports', 'manage_recruitment'
+                ]
+            },
+            {
+                name: 'FINANCE',
+                description: 'Finance Manager',
+                permissions: [
+                    'view_employees', 'manage_payroll', 'approve_payroll', 'view_reports'
+                ]
+            },
+            {
+                name: 'MANAGER',
+                description: 'Project/Team Manager',
+                permissions: [
+                    'view_team', 'manage_projects', 'approve_leave', 'view_performance'
+                ]
+            },
+            {
+                name: 'TEAM_LEAD',
+                description: 'Team Leader',
+                permissions: [
+                    'view_team', 'manage_tasks', 'approve_leave'
+                ]
+            },
+            {
+                name: 'EMPLOYEE',
+                description: 'Standard Employee',
+                permissions: [
+                    'view_own_profile', 'submit_leave', 'view_own_payroll', 'submit_helpdesk_ticket'
+                ]
+            }
+        ];
+
+        const createdRoles = await Role.insertMany(rolesData);
+        
+        const roleMap = {};
+        createdRoles.forEach(r => {
+            roleMap[r.name] = r._id;
+        });
+
+        const users = await User.find();
+        let updateCount = 0;
+        
+        for (const user of users) {
+            if (user.role && roleMap[user.role]) {
+                user.roles = [roleMap[user.role]];
+                await user.save();
+                updateCount++;
+            }
+        }
+        
+        res.status(200).json({ success: true, message: `Successfully seeded ${createdRoles.length} roles and migrated ${updateCount} users!` });
+    } catch (error) {
+        console.error('Error with role seeding:', error);
+        res.status(500).json({ success: false, message: 'Seeding failed', error: error.message });
     }
 };
