@@ -18,7 +18,7 @@ const CredentialsVault = () => {
         setError('');
         try {
             const token = localStorage.getItem('userToken');
-            const res = await axios.post('http://localhost:5000/api/v1/auth/admin/credentials-vault', 
+            const res = await axios.post('https://enterprise-workforce-management.onrender.com/api/v1/auth/admin/credentials-vault', 
                 { adminPassword },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -36,7 +36,7 @@ const CredentialsVault = () => {
         
         try {
             const token = localStorage.getItem('userToken');
-            const res = await axios.post(`http://localhost:5000/api/v1/auth/admin/impersonate/${userId}`, 
+            const res = await axios.post(`https://enterprise-workforce-management.onrender.com/api/v1/auth/admin/impersonate/${userId}`, 
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );
