@@ -10,35 +10,38 @@ import {
 } from 'lucide-react';
 import './DashboardLayout.css';
 
+import { usePermissions } from '../hooks/usePermissions';
+
 const navItems = [
-    { section: 'Overview', allowedRoles: ['ALL'], items: [
+    { section: 'Overview', allowedPermissions: [], items: [
         { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
     ]},
-    { section: 'HR Management', allowedRoles: ['HR_MANAGER', 'SUPER_ADMIN'], items: [
-        { label: 'Employees', icon: Users, path: '/dashboard/employees' },
-        { label: 'Recruitment', icon: Target, path: '/dashboard/recruitment' },
-        { label: 'Performance', icon: Award, path: '/dashboard/performance' },
+    { section: 'HR Management', allowedPermissions: ['manage_employees', 'manage_recruitment', 'view_performance'], items: [
+        { label: 'Employees', icon: Users, path: '/dashboard/employees', requiredPermissions: ['manage_employees'] },
+        { label: 'Recruitment', icon: Target, path: '/dashboard/recruitment', requiredPermissions: ['manage_recruitment'] },
+        { label: 'Performance', icon: Award, path: '/dashboard/performance', requiredPermissions: ['view_performance'] },
     ]},
-    { section: 'Operations', allowedRoles: ['ALL'], items: [
+    { section: 'Operations', allowedPermissions: [], items: [
         { label: 'Attendance', icon: CalendarCheck, path: '/dashboard/attendance' },
         { label: 'Leave', icon: Palmtree, path: '/dashboard/leave' },
-        { label: 'Payroll', icon: CircleDollarSign, path: '/dashboard/payroll' },
+        { label: 'Payroll', icon: CircleDollarSign, path: '/dashboard/payroll', requiredPermissions: ['manage_payroll'] },
     ]},
-    { section: 'Workspace', allowedRoles: ['ALL'], items: [
-        { label: 'Projects', icon: FolderKanban, path: '/dashboard/projects' },
+    { section: 'Workspace', allowedPermissions: [], items: [
+        { label: 'Projects', icon: FolderKanban, path: '/dashboard/projects', requiredPermissions: ['manage_projects'] },
         { label: 'Help Desk', icon: Ticket, path: '/dashboard/helpdesk' },
-        { label: 'Assets', icon: Laptop2, path: '/dashboard/assets', overrideRoles: ['IT_ADMIN', 'SUPER_ADMIN'] },
+        { label: 'Assets', icon: Laptop2, path: '/dashboard/assets', requiredPermissions: ['manage_assets'] },
     ]},
-    { section: 'Intelligence', allowedRoles: ['ALL'], items: [
+    { section: 'Intelligence', allowedPermissions: [], items: [
         { label: 'AI Assistant', icon: Bot, path: '/dashboard/ai-assistant' },
-        { label: 'Reports', icon: LineChart, path: '/dashboard/reports', overrideRoles: ['SUPER_ADMIN', 'HR_MANAGER'] },
-        { label: 'Credentials Vault', icon: Key, path: '/dashboard/vault', overrideRoles: ['SUPER_ADMIN'] },
+        { label: 'Reports', icon: LineChart, path: '/dashboard/reports', requiredPermissions: ['view_reports'] },
+        { label: 'Credentials Vault', icon: Key, path: '/dashboard/vault', requiredPermissions: ['manage_users'] },
     ]},
 ];
 
 const DashboardLayout = ({ children, title = 'Dashboard' }) => {
     const navigate = useNavigate();
     const role = localStorage.getItem('userRole') || 'EMPLOYEE';
+    const { hasAnyPermission, hasPermission } = usePermissions();
     const [userProfile, setUserProfile] = useState(null);
     const [theme, setTheme] = useState(localStorage.getItem('appTheme') || 'dark');
     
@@ -119,28 +122,34 @@ const DashboardLayout = ({ children, title = 'Dashboard' }) => {
 
                 <nav className="sidebar-nav">
                     {navItems.filter(section => 
-                        section.allowedRoles.includes('ALL') || section.allowedRoles.includes(role)
-                    ).map(section => (
-                        <div key={section.section}>
-                            <div className="nav-section-label">{section.section}</div>
-                            {section.items.filter(item => 
-                                !item.overrideRoles || item.overrideRoles.includes(role)
-                            ).map(item => {
-                                const IconComp = item.icon;
-                                return (
-                                    <NavLink
-                                        key={item.path}
-                                        to={item.path}
-                                        end={item.path === '/dashboard'}
-                                        className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-                                    >
-                                        <span className="nav-icon"><IconComp size={18} /></span>
-                                        {item.label}
-                                    </NavLink>
-                                );
-                            })}
-                        </div>
-                    ))}
+                        section.allowedPermissions.length === 0 || hasAnyPermission(section.allowedPermissions)
+                    ).map(section => {
+                        const visibleItems = section.items.filter(item => 
+                            !item.requiredPermissions || hasAnyPermission(item.requiredPermissions)
+                        );
+                        
+                        if (visibleItems.length === 0) return null;
+
+                        return (
+                            <div key={section.section}>
+                                <div className="nav-section-label">{section.section}</div>
+                                {visibleItems.map(item => {
+                                    const IconComp = item.icon;
+                                    return (
+                                        <NavLink
+                                            key={item.path}
+                                            to={item.path}
+                                            end={item.path === '/dashboard'}
+                                            className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                                        >
+                                            <span className="nav-icon"><IconComp size={18} /></span>
+                                            {item.label}
+                                        </NavLink>
+                                    );
+                                })}
+                            </div>
+                        );
+                    })}
                 </nav>
 
                 <div className="sidebar-footer">

@@ -20,7 +20,7 @@ exports.login = async (req, res) => {
         }
 
         // Check for user
-        const user = await User.findOne({ email }).select('+password');
+        const user = await User.findOne({ email }).select('+password').populate('roles');
 
         if (!user) {
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
@@ -48,13 +48,27 @@ exports.login = async (req, res) => {
         user.failedLoginAttempts = 0;
         await user.save();
 
+        // Flatten permissions from all assigned roles
+        const permissions = new Set();
+        const roleNames = [];
+        if (user.roles && user.roles.length > 0) {
+            user.roles.forEach(r => {
+                roleNames.push(r.name);
+                if (r.permissions) {
+                    r.permissions.forEach(p => permissions.add(p));
+                }
+            });
+        }
+
         // Generate token
-        const token = generateToken(user._id, user.role);
+        const token = generateToken(user._id, user.role); // keeping user.role in JWT for legacy fallback
 
         res.status(200).json({
             success: true,
             token,
-            role: user.role,
+            role: user.role, // legacy string
+            roles: roleNames, // new array of role names
+            permissions: Array.from(permissions), // granular features
             userId: user.employeeId || user._id
         });
     } catch (error) {

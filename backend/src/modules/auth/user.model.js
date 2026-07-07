@@ -25,6 +25,10 @@ const UserSchema = new mongoose.Schema({
         enum: ['SUPER_ADMIN', 'ORG_ADMIN', 'HR_MANAGER', 'MANAGER', 'TEAM_LEAD', 'EMPLOYEE', 'FINANCE', 'IT_ADMIN', 'AUDITOR'],
         default: 'EMPLOYEE'
     },
+    roles: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Role'
+    }],
     employeeId: {
         type: String, // Will map to Employee profile ID
         default: null

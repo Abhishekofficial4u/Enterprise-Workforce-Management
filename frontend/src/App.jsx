@@ -26,7 +26,7 @@ const PrivateRoute = ({ children }) => {
     return token ? children : <Navigate to="/login" replace />;
 };
 
-// Guard: RBAC Role Check
+// Guard: RBAC Role Check (Legacy fallback)
 const RoleRoute = ({ children, allowedRoles }) => {
     const role = localStorage.getItem('userRole');
     if (!role) return <Navigate to="/login" replace />;
@@ -34,8 +34,21 @@ const RoleRoute = ({ children, allowedRoles }) => {
     return children;
 };
 
+// Guard: RBAC Permission Check
+const PermissionRoute = ({ children, requiredPermissions }) => {
+    const permsStr = localStorage.getItem('userPermissions');
+    const permissions = permsStr ? JSON.parse(permsStr) : [];
+    if (!permissions || permissions.length === 0) return <Navigate to="/login" replace />;
+    
+    // Check if user has ALL required permissions
+    const hasPermission = requiredPermissions.every(p => permissions.includes(p));
+    if (!hasPermission) return <Navigate to="/dashboard" replace />;
+    return children;
+};
+
 const Wrap = ({ children }) => <PrivateRoute>{children}</PrivateRoute>;
 const RoleWrap = ({ children, roles }) => <PrivateRoute><RoleRoute allowedRoles={roles}>{children}</RoleRoute></PrivateRoute>;
+const PermWrap = ({ children, perms }) => <PrivateRoute><PermissionRoute requiredPermissions={perms}>{children}</PermissionRoute></PrivateRoute>;
 
 function App() {
     return (
@@ -52,25 +65,25 @@ function App() {
                 <Route path="/dashboard/profile" element={<Wrap><Profile /></Wrap>} />
                 
                 {/* HR Only */}
-                <Route path="/dashboard/employees"   element={<RoleWrap roles={['HR_MANAGER', 'SUPER_ADMIN']}><Employees /></RoleWrap>} />
-                <Route path="/dashboard/vault"       element={<RoleWrap roles={['SUPER_ADMIN']}><CredentialsVault /></RoleWrap>} />
-                <Route path="/dashboard/reports"     element={<RoleWrap roles={['SUPER_ADMIN', 'HR_MANAGER']}><Reports /></RoleWrap>} />
+                <Route path="/dashboard/employees"   element={<PermWrap perms={['manage_employees']}><Employees /></PermWrap>} />
+                <Route path="/dashboard/vault"       element={<PermWrap perms={['manage_users']}><CredentialsVault /></PermWrap>} />
+                <Route path="/dashboard/reports"     element={<PermWrap perms={['view_reports']}><Reports /></PermWrap>} />
                 <Route path="/dashboard/ai-assistant" element={<Wrap><AiAssistant /></Wrap>} />
                 
                 {/* Finance/Admin Only */}
-                <Route path="/dashboard/payroll"     element={<Wrap><Payroll /></Wrap>} />
+                <Route path="/dashboard/payroll"     element={<PermWrap perms={['manage_payroll']}><Payroll /></PermWrap>} />
                 
                 {/* Everyone */}
                 <Route path="/dashboard/attendance"  element={<Wrap><Attendance /></Wrap>} />
                 <Route path="/dashboard/leave"       element={<Wrap><Leave /></Wrap>} />
 
-                {/* Phase 2 Placeholders - Restricted for now */}
-                <Route path="/dashboard/recruitment" element={<RoleWrap roles={['HR_MANAGER', 'SUPER_ADMIN']}><RecruitmentHome /></RoleWrap>} />
-                <Route path="/dashboard/performance" element={<Wrap><PerformanceHome /></Wrap>} />
-                <Route path="/dashboard/projects"    element={<Wrap><ProjectsHome /></Wrap>} />
-                <Route path="/dashboard/projects/:id" element={<Wrap><ProjectKanban /></Wrap>} />
+                {/* Restricted Features */}
+                <Route path="/dashboard/recruitment" element={<PermWrap perms={['manage_recruitment']}><RecruitmentHome /></PermWrap>} />
+                <Route path="/dashboard/performance" element={<PermWrap perms={['view_performance']}><PerformanceHome /></PermWrap>} />
+                <Route path="/dashboard/projects"    element={<PermWrap perms={['manage_projects']}><ProjectsHome /></PermWrap>} />
+                <Route path="/dashboard/projects/:id" element={<PermWrap perms={['manage_projects']}><ProjectKanban /></PermWrap>} />
                 <Route path="/dashboard/helpdesk"    element={<Wrap><HelpDesk /></Wrap>} />
-                <Route path="/dashboard/assets"      element={<RoleWrap roles={['IT_ADMIN', 'SUPER_ADMIN']}><Assets /></RoleWrap>} />
+                <Route path="/dashboard/assets"      element={<PermWrap perms={['manage_assets']}><Assets /></PermWrap>} />
 
                 {/* Default redirect to Landing Page instead of Login */}
                 <Route path="*" element={<Navigate to="/" replace />} />
