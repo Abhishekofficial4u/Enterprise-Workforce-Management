@@ -188,6 +188,13 @@ exports.predictLeave = async (req, res) => {
         const leave = await Leave.findById(req.params.id).populate('employeeId', 'department name');
         if (!leave) return res.status(404).json({ success: false, message: 'Leave request not found' });
 
+        const isOwner = leave.employeeId._id.toString() === req.user.employeeId?.toString();
+        const isAdminRole = req.user.roles.some(r => ['MANAGER', 'HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'].includes(r.name));
+        
+        if (!isOwner && !isAdminRole) {
+            return res.status(403).json({ success: false, message: 'Not authorized to view this prediction' });
+        }
+
         const employee = await Employee.findById(leave.employeeId._id);
         
         // Mock team stats for now

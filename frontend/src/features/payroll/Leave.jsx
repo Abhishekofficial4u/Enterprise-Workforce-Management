@@ -180,7 +180,7 @@ const Leave = () => {
                                         <th>Duration</th>
                                         <th>Reason</th>
                                         <th>Status</th>
-                                        {isAdmin && <th>Actions</th>}
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -205,26 +205,28 @@ const Leave = () => {
                                             <td>
                                                 <span className={`badge badge-${leave.status.toLowerCase()}`}>{leave.status}</span>
                                             </td>
-                                            {isAdmin && (
-                                                <td>
-                                                    {leave.status === 'Pending' ? (
-                                                        <div style={{ display: 'flex', gap: '8px' }}>
-                                                            <button className="btn-primary" onClick={() => handleStatusUpdate(leave._id, 'Approved')} style={{ padding: '4px 8px', fontSize: '12px', background: 'var(--success)' }}>Approve</button>
-                                                            <button className="btn-secondary" onClick={() => handleStatusUpdate(leave._id, 'Rejected')} style={{ padding: '4px 8px', fontSize: '12px', background: 'var(--danger)', color: 'white', border: 'none' }}>Reject</button>
-                                                            <button 
-                                                                className="ewm-btn-secondary" 
-                                                                onClick={() => handleAIPredict(leave._id)} 
-                                                                style={{ padding: '4px 8px', fontSize: '12px' }}
-                                                                disabled={analyzingId === leave._id}
-                                                            >
-                                                                {analyzingId === leave._id ? '...' : '✨ Predict AI'}
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Reviewed</span>
-                                                    )}
-                                                </td>
-                                            )}
+                                            <td>
+                                                {leave.status === 'Pending' ? (
+                                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                                        {isAdmin && (
+                                                            <>
+                                                                <button className="btn-primary" onClick={() => handleStatusUpdate(leave._id, 'Approved')} style={{ padding: '4px 8px', fontSize: '12px', background: 'var(--success)' }}>Approve</button>
+                                                                <button className="btn-secondary" onClick={() => handleStatusUpdate(leave._id, 'Rejected')} style={{ padding: '4px 8px', fontSize: '12px', background: 'var(--danger)', color: 'white', border: 'none' }}>Reject</button>
+                                                            </>
+                                                        )}
+                                                        <button 
+                                                            className="btn-secondary" 
+                                                            onClick={() => handleAIPredict(leave._id)} 
+                                                            style={{ padding: '4px 8px', fontSize: '12px', background: 'rgba(99,102,241,0.1)', color: 'var(--primary-light)', border: '1px solid var(--primary)' }}
+                                                            disabled={analyzingId === leave._id}
+                                                        >
+                                                            {analyzingId === leave._id ? '...' : '✨ Predict AI'}
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{isAdmin ? 'Reviewed' : '-'}</span>
+                                                )}
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
