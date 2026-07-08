@@ -118,9 +118,9 @@ function App() {
                 <Route path="/hr/dashboard/employees" element={<PermWrap perms={['manage_employees']}><HRLayout><Employees /></HRLayout></PermWrap>} />
                 <Route path="/hr/dashboard/recruitment" element={<PermWrap perms={['manage_recruitment']}><HRLayout><RecruitmentHome /></HRLayout></PermWrap>} />
                 <Route path="/hr/dashboard/performance" element={<PermWrap perms={[]}><HRLayout><PerformanceHome /></HRLayout></PermWrap>} />
-                <Route path="/hr/dashboard/attendance" element={<PermWrap perms={['approve_leave']}><HRLayout><Attendance /></HRLayout></PermWrap>} />
-                <Route path="/hr/dashboard/leave" element={<PermWrap perms={['approve_leave']}><HRLayout><Leave /></HRLayout></PermWrap>} />
-                <Route path="/hr/dashboard/shifts" element={<PermWrap perms={['approve_leave']}><HRLayout><ShiftManagement /></HRLayout></PermWrap>} />
+                <Route path="/hr/dashboard/attendance" element={<PermWrap perms={['manage_attendance']}><HRLayout><Attendance /></HRLayout></PermWrap>} />
+                <Route path="/hr/dashboard/leave" element={<PermWrap perms={['manage_attendance']}><HRLayout><Leave /></HRLayout></PermWrap>} />
+                <Route path="/hr/dashboard/shifts" element={<PermWrap perms={['manage_attendance']}><HRLayout><ShiftManagement /></HRLayout></PermWrap>} />
                 <Route path="/hr/dashboard/announcements" element={<PermWrap perms={['manage_employees']}><HRLayout><AnnouncementsManager /></HRLayout></PermWrap>} />
                 <Route path="/hr/dashboard/training" element={<PermWrap perms={['manage_employees']}><HRLayout><TrainingManager /></HRLayout></PermWrap>} />
                 <Route path="/hr/dashboard/reports" element={<PermWrap perms={['view_reports']}><HRLayout><Reports /></HRLayout></PermWrap>} />
