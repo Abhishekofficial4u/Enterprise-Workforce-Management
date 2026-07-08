@@ -20,6 +20,17 @@ router.post('/register-admin', authController.registerAdmin);
 router.post('/forgot-password', authController.forgotPassword);
 router.put('/reset-password/:token', authController.resetPassword);
 
+// TEMPORARY: Seed Endpoint for Live Testing
+const seedDemoData = require('../../scripts/seedDemoData');
+router.post('/seed-demo', async (req, res) => {
+    try {
+        const credentials = await seedDemoData();
+        res.status(200).json({ success: true, message: 'Demo data seeded!', credentials });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 router.post('/admin/credentials-vault', protect, authorize('SUPER_ADMIN'), authController.getCredentialsVault);
 router.post('/admin/impersonate/:userId', protect, authorize('SUPER_ADMIN'), auditLog('IMPERSONATE_USER', 'USERS'), authController.impersonateUser);
 
