@@ -15,6 +15,7 @@ const employeeNavItems = [
         { label: 'My Dashboard', icon: LayoutDashboard, path: '/employee/dashboard' },
         { label: 'My Profile', icon: User, path: '/employee/dashboard/profile' },
         { label: 'My Learning', icon: GraduationCap, path: '/employee/dashboard/learning' },
+        { label: 'Internal Careers', icon: Briefcase, path: '/employee/dashboard/careers' },
     ]},
     { section: 'Time & Pay', items: [
         { label: 'My Attendance', icon: CalendarCheck, path: '/employee/dashboard/attendance' },

@@ -9,7 +9,7 @@ const CandidatePipeline = ({ job }) => {
     const [loading, setLoading] = useState(true);
     const [showAddModal, setShowAddModal] = useState(false);
     const [newCandidate, setNewCandidate] = useState({
-        firstName: '', lastName: '', email: '', phone: '', resumeUrl: '', jobId: job._id
+        firstName: '', lastName: '', email: '', phone: '', resumeUrl: '', skills: '', experience: '', jobId: job._id
     });
     const [aiResult, setAiResult] = useState(null);
     const [analyzingId, setAnalyzingId] = useState(null);
@@ -35,7 +35,7 @@ const CandidatePipeline = ({ job }) => {
         try {
             await createCandidate(newCandidate);
             setShowAddModal(false);
-            setNewCandidate({ firstName: '', lastName: '', email: '', phone: '', resumeUrl: '', jobId: job._id });
+            setNewCandidate({ firstName: '', lastName: '', email: '', phone: '', resumeUrl: '', skills: '', experience: '', jobId: job._id });
             fetchCandidates();
         } catch (error) {
             alert('Failed to add candidate.');
@@ -201,6 +201,14 @@ const CandidatePipeline = ({ job }) => {
                             <div className="form-group">
                                 <label>Resume URL</label>
                                 <input type="url" placeholder="https://linkedin.com/in/..." value={newCandidate.resumeUrl} onChange={e => setNewCandidate({...newCandidate, resumeUrl: e.target.value})} />
+                            </div>
+                            <div className="form-group" style={{ marginTop: '16px' }}>
+                                <label>Key Skills (comma separated)</label>
+                                <textarea rows="2" value={newCandidate.skills} onChange={e => setNewCandidate({...newCandidate, skills: e.target.value})}></textarea>
+                            </div>
+                            <div className="form-group" style={{ marginTop: '16px' }}>
+                                <label>Experience Summary</label>
+                                <textarea rows="3" value={newCandidate.experience} onChange={e => setNewCandidate({...newCandidate, experience: e.target.value})}></textarea>
                             </div>
                             <div className="modal-actions">
                                 <button type="button" className="btn-secondary" onClick={() => setShowAddModal(false)}>Cancel</button>

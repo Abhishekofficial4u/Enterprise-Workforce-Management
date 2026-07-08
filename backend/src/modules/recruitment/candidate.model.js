@@ -7,6 +7,9 @@ const candidateSchema = new mongoose.Schema({
     phone: { type: String },
     jobId: { type: mongoose.Schema.Types.ObjectId, ref: 'Job', required: true },
     resumeUrl: { type: String },
+    skills: { type: String },
+    experience: { type: String },
+    aiMatchScore: { type: Number },
     stage: { 
         type: String, 
         enum: ['Applied', 'Screening', 'Interview', 'Offered', 'Hired', 'Rejected'], 

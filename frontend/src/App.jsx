@@ -22,6 +22,7 @@ import Payroll from './features/payroll/Payroll';
 import ProjectsHome from './features/projects/ProjectsHome';
 import ProjectKanban from './features/projects/components/ProjectKanban';
 import RecruitmentHome from './features/recruitment/RecruitmentHome';
+import JobBoard from './features/recruitment/components/JobBoard';
 import PerformanceHome from './features/performance/PerformanceHome';
 import AuditLogs from './features/admin/AuditLogs';
 import HelpDesk from './features/helpdesk/HelpDesk';
@@ -84,6 +85,7 @@ function App() {
             <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={<LandingPage />} />
+                <Route path="/careers" element={<div style={{ minHeight: '100vh', background: 'var(--bg)', padding: '40px 0' }}><div style={{ maxWidth: 1200, margin: '0 auto' }}><h1 style={{ padding: '0 24px', color: 'var(--text-primary)' }}>Careers at Enterprise</h1><JobBoard /></div></div>} />
                 <Route path="/portal" element={<RolePortal />} />
                 <Route path="/login/:portalId" element={<Login />} />
                 <Route path="/login" element={<Navigate to="/portal" replace />} />
@@ -160,6 +162,7 @@ function App() {
                 <Route path="/employee/dashboard/payroll" element={<PermWrap perms={[]}><EmployeeLayout><Payroll /></EmployeeLayout></PermWrap>} />
                 <Route path="/employee/dashboard/helpdesk" element={<PermWrap perms={[]}><EmployeeLayout><HelpDesk /></EmployeeLayout></PermWrap>} />
                 <Route path="/employee/dashboard/learning" element={<PermWrap perms={[]}><EmployeeLayout><LearningPortal /></EmployeeLayout></PermWrap>} />
+                <Route path="/employee/dashboard/careers" element={<PermWrap perms={[]}><EmployeeLayout><JobBoard /></EmployeeLayout></PermWrap>} />
 
                 {/* Legacy Routes (To be deprecated) */}
                 <Route path="/dashboard" element={<Wrap><DashboardHome /></Wrap>} />
