@@ -23,6 +23,7 @@ const hrNavItems = [
     { section: 'Operations', items: [
         { label: 'Attendance Hub', icon: CalendarCheck, path: '/hr/dashboard/attendance' },
         { label: 'Leave Management', icon: Palmtree, path: '/hr/dashboard/leave' },
+        { label: 'Payroll Management', icon: FileText, path: '/hr/dashboard/payroll' },
         { label: 'Announcements', icon: Megaphone, path: '/hr/dashboard/announcements' },
         { label: 'Training & Dev', icon: GraduationCap, path: '/hr/dashboard/training' },
     ]},

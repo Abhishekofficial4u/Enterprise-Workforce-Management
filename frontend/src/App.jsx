@@ -124,6 +124,7 @@ function App() {
                 <Route path="/hr/dashboard/announcements" element={<PermWrap perms={['manage_employees']}><HRLayout><AnnouncementsManager /></HRLayout></PermWrap>} />
                 <Route path="/hr/dashboard/training" element={<PermWrap perms={['manage_employees']}><HRLayout><TrainingManager /></HRLayout></PermWrap>} />
                 <Route path="/hr/dashboard/reports" element={<PermWrap perms={['view_reports']}><HRLayout><Reports /></HRLayout></PermWrap>} />
+                <Route path="/hr/dashboard/payroll" element={<PermWrap perms={['manage_payroll']}><HRLayout><Payroll /></HRLayout></PermWrap>} />
                 <Route path="/hr/dashboard/profile" element={<PermWrap perms={[]}><HRLayout><Profile /></HRLayout></PermWrap>} />
 
                 {/* ======================= */}
