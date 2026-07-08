@@ -7,10 +7,12 @@ const rateLimit = require('express-rate-limit');
 const connectDB = require('./shared/db');
 const { initRedis } = require('./shared/redis');
 const socketModule = require('./shared/socket'); // Import socket module
+const initCronJobs = require('./scripts/cronJobs'); // Import cron jobs
 
 // Connect to Database
 connectDB();
 initRedis(); // Initialize Redis Client
+initCronJobs(); // Initialize Cron Jobs
 
 const app = express();
 const server = http.createServer(app); // Create HTTP server

@@ -56,7 +56,7 @@ const DashboardHome = () => {
     const [todayAttendance, setTodayAttendance] = useState(null);
     const [attLoading, setAttLoading] = useState(false);
     const [userProfile, setUserProfile] = useState(null);
-    
+    const [announcements, setAnnouncements] = useState([]);
     // Real Data State for Admins
     const [realStats, setRealStats] = useState({
         totalEmployees: 0,
@@ -79,6 +79,9 @@ const DashboardHome = () => {
     useEffect(() => {
         import('../../employees/api/employeeService').then(({ getMyProfile }) => {
             getMyProfile().then(res => setUserProfile(res.data)).catch(() => {});
+        });
+        import('../api/announcementService').then(({ getAnnouncements }) => {
+            getAnnouncements().then(res => setAnnouncements(res.data)).catch(() => {});
         });
         if (role === 'EMPLOYEE') {
             import('../../attendance/api/attendanceService').then(({ getMyAttendance }) => {
@@ -208,8 +211,8 @@ const DashboardHome = () => {
         ];
         quickActions = [
             { icon: '➕', label: 'Add Employee', onClick: () => navigate('/hr/dashboard/employees') },
-            { icon: '📋', label: 'Leaves', onClick: () => navigate('/hr/dashboard/leave') },
-            { icon: '🏆', label: 'Reviews', onClick: () => navigate('/hr/dashboard/performance') },
+            { icon: '📢', label: 'News/Events', onClick: () => navigate('/hr/dashboard/announcements') },
+            { icon: '🎓', label: 'Training', onClick: () => navigate('/hr/dashboard/training') },
             { icon: '🎯', label: 'Post Job', onClick: () => navigate('/hr/dashboard/recruitment') },
         ];
     } else if (role === 'FINANCE') {
@@ -258,6 +261,7 @@ const DashboardHome = () => {
             { icon: '📋', label: 'Apply Leave', onClick: () => navigate('/employee/dashboard/leave') },
             { icon: '💰', label: 'Payslips', onClick: () => navigate('/employee/dashboard/payroll') },
             { icon: '🎫', label: 'IT Help', onClick: () => navigate('/employee/dashboard/helpdesk') },
+            { icon: '🎓', label: 'My Learning', onClick: () => navigate('/employee/dashboard/learning') },
         ];
     }
 
@@ -359,6 +363,32 @@ const DashboardHome = () => {
                                 <Legend verticalAlign="bottom" height={36}/>
                             </PieChart>
                         </ResponsiveContainer>
+                    </div>
+                )}
+
+                {/* Announcements / Bulletin Board */}
+                {announcements.length > 0 && (
+                    <div className="card" style={{ marginBottom: 24 }}>
+                        <div className="card-header">
+                            <span className="card-title">Company Bulletin Board</span>
+                            <span className="card-badge">Latest Updates</span>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px', padding: '16px' }}>
+                            {announcements.map(ann => (
+                                <div key={ann._id} style={{ padding: '16px', border: '1px solid #1e293b', borderRadius: '8px', background: 'rgba(30, 41, 59, 0.4)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                        <h4 style={{ margin: 0, color: '#f8fafc', fontSize: '15px' }}>{ann.title}</h4>
+                                        <span style={{ fontSize: '11px', padding: '2px 8px', borderRadius: '12px', background: ann.type === 'Work Anniversary' ? '#10b98120' : '#6366f120', color: ann.type === 'Work Anniversary' ? '#34d399' : '#818cf8' }}>
+                                            {ann.type}
+                                        </span>
+                                    </div>
+                                    <p style={{ margin: 0, color: '#94a3b8', fontSize: '13px', lineHeight: '1.4' }}>{ann.content}</p>
+                                    <div style={{ marginTop: '12px', fontSize: '11px', color: '#64748b' }}>
+                                        {new Date(ann.createdAt).toLocaleDateString()}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
 

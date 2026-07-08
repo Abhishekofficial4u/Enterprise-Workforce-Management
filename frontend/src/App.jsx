@@ -28,6 +28,9 @@ import HelpDesk from './features/helpdesk/HelpDesk';
 import Assets from './features/assets/Assets';
 import Reports from './features/reports/Reports';
 import AiAssistant from './features/ai/AiAssistant';
+import AnnouncementsManager from './features/employees/components/AnnouncementsManager';
+import TrainingManager from './features/hr/components/TrainingManager';
+import LearningPortal from './features/employees/components/LearningPortal';
 
 // Guard: redirect to login if no token
 const PrivateRoute = ({ children }) => {
@@ -118,6 +121,8 @@ function App() {
                 <Route path="/hr/dashboard/attendance" element={<PermWrap perms={['approve_leave']}><HRLayout><Attendance /></HRLayout></PermWrap>} />
                 <Route path="/hr/dashboard/leave" element={<PermWrap perms={['approve_leave']}><HRLayout><Leave /></HRLayout></PermWrap>} />
                 <Route path="/hr/dashboard/shifts" element={<PermWrap perms={['approve_leave']}><HRLayout><ShiftManagement /></HRLayout></PermWrap>} />
+                <Route path="/hr/dashboard/announcements" element={<PermWrap perms={['manage_employees']}><HRLayout><AnnouncementsManager /></HRLayout></PermWrap>} />
+                <Route path="/hr/dashboard/training" element={<PermWrap perms={['manage_employees']}><HRLayout><TrainingManager /></HRLayout></PermWrap>} />
                 <Route path="/hr/dashboard/reports" element={<PermWrap perms={['view_reports']}><HRLayout><Reports /></HRLayout></PermWrap>} />
                 <Route path="/hr/dashboard/profile" element={<PermWrap perms={[]}><HRLayout><Profile /></HRLayout></PermWrap>} />
 
@@ -148,10 +153,12 @@ function App() {
                 {/* ======================= */}
                 <Route path="/employee/dashboard" element={<PermWrap perms={[]}><EmployeeLayout><DashboardHome /></EmployeeLayout></PermWrap>} />
                 <Route path="/employee/dashboard/profile" element={<PermWrap perms={[]}><EmployeeLayout><Profile /></EmployeeLayout></PermWrap>} />
+                <Route path="/employee/dashboard/credentials" element={<PermWrap perms={[]}><EmployeeLayout><CredentialsVault /></EmployeeLayout></PermWrap>} />
                 <Route path="/employee/dashboard/attendance" element={<PermWrap perms={[]}><EmployeeLayout><Attendance /></EmployeeLayout></PermWrap>} />
                 <Route path="/employee/dashboard/leave" element={<PermWrap perms={[]}><EmployeeLayout><Leave /></EmployeeLayout></PermWrap>} />
                 <Route path="/employee/dashboard/payroll" element={<PermWrap perms={[]}><EmployeeLayout><Payroll /></EmployeeLayout></PermWrap>} />
                 <Route path="/employee/dashboard/helpdesk" element={<PermWrap perms={[]}><EmployeeLayout><HelpDesk /></EmployeeLayout></PermWrap>} />
+                <Route path="/employee/dashboard/learning" element={<PermWrap perms={[]}><EmployeeLayout><LearningPortal /></EmployeeLayout></PermWrap>} />
 
                 {/* Legacy Routes (To be deprecated) */}
                 <Route path="/dashboard" element={<Wrap><DashboardHome /></Wrap>} />

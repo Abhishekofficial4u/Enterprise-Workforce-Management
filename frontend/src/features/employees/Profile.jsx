@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getMyProfile, updateMyProfile } from './api/employeeService';
 import DocumentsManager from './components/DocumentsManager';
+import OnboardingTracker from './components/OnboardingTracker';
 import '../../components/shared.css';
 
 const Profile = () => {
@@ -230,8 +231,8 @@ const Profile = () => {
                             </button>
                         </div>
                     </form>
-                    
                     <DocumentsManager employeeId={profile._id} />
+                    <OnboardingTracker employeeId={profile._id} />
                 </div>
             </div>
         </>

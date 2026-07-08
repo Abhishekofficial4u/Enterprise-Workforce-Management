@@ -5,6 +5,9 @@ const documentController = require('./document.controller');
 const { protect, authorize } = require('../../middlewares/auth.middleware');
 const auditLog = require('../../middlewares/audit.middleware');
 const cache = require('../../middlewares/cache.middleware');
+const { clearCache } = require('../../middlewares/cache.middleware');
+const onboardingController = require('./onboarding.controller');
+const trainingController = require('./training.controller');
 
 // Protect all routes
 router.use(protect);
@@ -46,5 +49,28 @@ router.route('/employees/:employeeId/documents')
 
 router.route('/documents/:id')
     .delete(authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), auditLog('DELETE_DOCUMENT', 'DOCUMENTS'), documentController.deleteDocument);
+
+// --- Onboarding Routes ---
+router.get('/employees/:employeeId/onboarding', onboardingController.getOnboardingTasks);
+router.post('/employees/:employeeId/onboarding', authorize('HR_MANAGER', 'SUPER_ADMIN'), onboardingController.createOnboardingTask);
+router.post('/employees/:employeeId/onboarding/generate', authorize('HR_MANAGER', 'SUPER_ADMIN'), onboardingController.generateStandardChecklist);
+router.put('/onboarding/:taskId', onboardingController.updateOnboardingTask);
+router.delete('/onboarding/:taskId', authorize('HR_MANAGER', 'SUPER_ADMIN'), onboardingController.deleteOnboardingTask);
+
+// --- Training & L&D Routes (HR) ---
+router.route('/training')
+    .get(authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), trainingController.getTrainingPrograms)
+    .post(authorize('HR_MANAGER', 'SUPER_ADMIN'), trainingController.createTrainingProgram);
+
+router.route('/training/:id')
+    .put(authorize('HR_MANAGER', 'SUPER_ADMIN'), trainingController.updateTrainingProgram)
+    .delete(authorize('HR_MANAGER', 'SUPER_ADMIN'), trainingController.deleteTrainingProgram);
+
+router.post('/training/enroll', authorize('HR_MANAGER', 'SUPER_ADMIN'), trainingController.enrollEmployee);
+router.get('/training/:id/enrollments', authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), trainingController.getProgramEnrollments);
+
+// --- Employee Learning Portal Routes ---
+router.get('/employees/me/learning', trainingController.getMyLearning);
+router.put('/learning/enrollments/:id', trainingController.updateEnrollmentStatus);
 
 module.exports = router;
