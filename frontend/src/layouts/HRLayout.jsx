@@ -5,7 +5,8 @@ import { getMyNotifications, markAsRead, markAllAsRead } from '../features/notif
 import { 
     LayoutDashboard, Users, Target, Award, 
     CalendarCheck, Palmtree, LineChart, 
-    Bell, Settings, LogOut, ArrowLeftRight, Briefcase, FileText
+    Bell, Settings, LogOut, ArrowLeftRight, Briefcase, FileText,
+    Megaphone, GraduationCap
 } from 'lucide-react';
 import GlobalSearch from '../components/GlobalSearch';
 import './HRLayout.css';
@@ -22,6 +23,8 @@ const hrNavItems = [
     { section: 'Operations', items: [
         { label: 'Attendance Hub', icon: CalendarCheck, path: '/hr/dashboard/attendance' },
         { label: 'Leave Management', icon: Palmtree, path: '/hr/dashboard/leave' },
+        { label: 'Announcements', icon: Megaphone, path: '/hr/dashboard/announcements' },
+        { label: 'Training & Dev', icon: GraduationCap, path: '/hr/dashboard/training' },
     ]},
     { section: 'Analytics', items: [
         { label: 'HR Reports', icon: LineChart, path: '/hr/dashboard/reports' },

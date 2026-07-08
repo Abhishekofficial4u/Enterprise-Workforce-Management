@@ -4,7 +4,8 @@ import { getMyProfile } from '../features/employees/api/employeeService';
 import { getMyNotifications, markAsRead, markAllAsRead } from '../features/notifications/api/notificationService';
 import { 
     LayoutDashboard, CalendarCheck, Palmtree, 
-    CircleDollarSign, User, Ticket, Bell,    LogOut, ArrowLeftRight, CreditCard, Banknote, Users, Briefcase, FileText
+    CircleDollarSign, User, Ticket, Bell,    LogOut, ArrowLeftRight, CreditCard, Banknote, Users, Briefcase, FileText,
+    GraduationCap
 } from 'lucide-react';
 import GlobalSearch from '../components/GlobalSearch';
 import './EmployeeLayout.css';
@@ -13,6 +14,7 @@ const employeeNavItems = [
     { section: 'My Workspace', items: [
         { label: 'My Dashboard', icon: LayoutDashboard, path: '/employee/dashboard' },
         { label: 'My Profile', icon: User, path: '/employee/dashboard/profile' },
+        { label: 'My Learning', icon: GraduationCap, path: '/employee/dashboard/learning' },
     ]},
     { section: 'Time & Pay', items: [
         { label: 'My Attendance', icon: CalendarCheck, path: '/employee/dashboard/attendance' },
