@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { createReview } from '../api/performanceService';
+import { createReview, generateAIDraft } from '../api/performanceService';
 import { getEmployees } from '../../employees/api/employeeService';
 
 const CreateReviewModal = ({ onClose, onSuccess }) => {
     const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [generatingAI, setGeneratingAI] = useState(false);
     
     const [formData, setFormData] = useState({
         employeeId: '',
@@ -40,6 +41,28 @@ const CreateReviewModal = ({ onClose, onSuccess }) => {
         } catch (error) {
             alert(error.response?.data?.message || 'Failed to create review');
             setLoading(false);
+        }
+    };
+
+    const handleAIDraft = async () => {
+        if (!formData.employeeId) {
+            alert('Please select an employee first to gather their goals and feedback.');
+            return;
+        }
+        setGeneratingAI(true);
+        try {
+            const res = await generateAIDraft(formData.employeeId);
+            if (res.data) {
+                setFormData(prev => ({
+                    ...prev,
+                    feedback: res.data.reviewText || ''
+                }));
+                // Optional: You could also auto-fill the recommended rating or KPIs here if they were provided in `res.data`.
+            }
+        } catch (error) {
+            alert('Failed to generate AI draft.');
+        } finally {
+            setGeneratingAI(false);
         }
     };
 
@@ -110,7 +133,22 @@ const CreateReviewModal = ({ onClose, onSuccess }) => {
                     </div>
 
                     <div className="form-group" style={{ marginTop: 16 }}>
-                        <label>Manager Feedback</label>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <label style={{ margin: 0 }}>Manager Feedback</label>
+                            <button 
+                                type="button" 
+                                onClick={handleAIDraft} 
+                                disabled={generatingAI || !formData.employeeId}
+                                style={{ 
+                                    background: 'linear-gradient(45deg, #8b5cf6, #ec4899)', 
+                                    color: 'white', border: 'none', borderRadius: 16, 
+                                    padding: '4px 12px', fontSize: 12, cursor: 'pointer',
+                                    display: 'flex', alignItems: 'center', gap: 6
+                                }}
+                            >
+                                ✨ {generatingAI ? 'Drafting...' : 'Draft with AI'}
+                            </button>
+                        </div>
                         <textarea 
                             required
                             rows="4"
