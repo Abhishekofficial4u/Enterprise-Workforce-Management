@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import DashboardLayout from '../../layouts/DashboardLayout';
 import { getAllAssets } from './api/assetService';
 import AddAssetModal from './components/AddAssetModal';
 import AssignAssetModal from './components/AssignAssetModal';
@@ -54,7 +53,7 @@ const Assets = () => {
     };
 
     return (
-        <DashboardLayout title="Asset Management">
+        <>
             <div>
                 <div className="page-header">
                     <div className="page-header-left">
@@ -68,15 +67,11 @@ const Assets = () => {
                     </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: 14, marginBottom: 22 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
                     {stats.map(s => (
-                        <div key={s.label} style={{
-                            background: 'var(--bg-card)', border: '1px solid var(--border)',
-                            borderRadius: 10, padding: '14px 20px', flex: 1,
-                            borderTop: `3px solid ${s.color}`
-                        }}>
-                            <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>{s.value}</div>
-                            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{s.label}</div>
+                        <div key={s.label} className="card" style={{ padding: 20, borderLeft: `4px solid ${s.color}` }}>
+                            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>{s.label}</div>
+                            <div style={{ fontSize: 28, fontWeight: 700, color: s.color === '#6366f1' ? 'var(--primary)' : 'var(--text-primary)' }}>{s.value}</div>
                         </div>
                     ))}
                 </div>
@@ -180,7 +175,7 @@ const Assets = () => {
                 />
             )}
 
-        </DashboardLayout>
+        </>
     );
 };
 

@@ -65,7 +65,10 @@ const EmployeeSchema = new mongoose.Schema({
         default: ''
     },
     skills: {
-        type: [String],
+        type: [{
+            name: String,
+            level: { type: String, enum: ['Beginner', 'Intermediate', 'Expert'], default: 'Intermediate' }
+        }],
         default: []
     },
     education: {

@@ -44,24 +44,47 @@ const RecruitmentHome = () => {
 
     if (loading) return <div className="loading-state">Loading recruitment data...</div>;
 
+    const totalActiveJobs = jobs.filter(j => j.status === 'Open').length;
+    const totalApplicants = jobs.reduce((acc, job) => acc + (job.applicantsCount || 0), 0);
+    const avgApplicantsPerJob = jobs.length > 0 ? (totalApplicants / jobs.length).toFixed(1) : 0;
+
     return (
-        <div className="recruitment-container">
-            <div className="recruitment-header">
-                <div>
+        <div className="recruitment-container" style={{ padding: '24px' }}>
+            <div className="page-header" style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div className="page-header-left">
                     <h1>Applicant Tracking System</h1>
-                    <p>Manage job postings and track candidates through the hiring pipeline.</p>
+                    <p>Manage job postings, track candidates, and optimize your hiring pipeline.</p>
                 </div>
-                {!selectedJob && (
-                    <button className="btn-primary" onClick={() => setShowNewJobModal(true)}>
-                        + Post New Job
-                    </button>
-                )}
-                {selectedJob && (
-                    <button className="btn-secondary" onClick={() => setSelectedJob(null)}>
-                        ← Back to Jobs
-                    </button>
-                )}
+                <div>
+                    {!selectedJob ? (
+                        <button className="btn-primary" onClick={() => setShowNewJobModal(true)}>
+                            + Post New Job
+                        </button>
+                    ) : (
+                        <button className="btn-secondary" onClick={() => setSelectedJob(null)}>
+                            ← Back to Jobs
+                        </button>
+                    )}
+                </div>
             </div>
+
+            {/* KPI Cards */}
+            {!selectedJob && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
+                    <div className="card" style={{ padding: 20, borderLeft: '4px solid var(--primary)' }}>
+                        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>Active Job Openings</div>
+                        <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-primary)' }}>{totalActiveJobs}</div>
+                    </div>
+                    <div className="card" style={{ padding: 20, borderLeft: '4px solid #10b981' }}>
+                        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>Total Applications</div>
+                        <div style={{ fontSize: 28, fontWeight: 700, color: '#10b981' }}>{totalApplicants}</div>
+                    </div>
+                    <div className="card" style={{ padding: 20, borderLeft: '4px solid #f59e0b' }}>
+                        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>Avg. Applicants / Job</div>
+                        <div style={{ fontSize: 28, fontWeight: 700, color: '#f59e0b' }}>{avgApplicantsPerJob}</div>
+                    </div>
+                </div>
+            )}
 
             <div className="recruitment-content">
                 {selectedJob ? (

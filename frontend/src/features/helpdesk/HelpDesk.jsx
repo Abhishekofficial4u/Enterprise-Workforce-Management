@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import DashboardLayout from '../../layouts/DashboardLayout';
 import { getMyTickets, getAllTickets } from './api/helpdeskService';
 import CreateTicketModal from './components/CreateTicketModal';
 import TicketDetailsModal from './components/TicketDetailsModal';
@@ -73,7 +72,7 @@ const HelpDesk = () => {
     };
 
     return (
-        <DashboardLayout title="Help Desk & IT Support">
+        <>
             <div>
                 <div className="page-header">
                     <div className="page-header-left">
@@ -86,6 +85,36 @@ const HelpDesk = () => {
                         </button>
                     </div>
                 </div>
+
+                {/* KPI Cards */}
+                {isAdmin && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+                        <div className="card" style={{ padding: 20, borderLeft: '4px solid var(--danger)' }}>
+                            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>Open Tickets</div>
+                            <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-primary)' }}>
+                                {tickets.filter(t => t.status === 'Open').length}
+                            </div>
+                        </div>
+                        <div className="card" style={{ padding: 20, borderLeft: '4px solid var(--warning)' }}>
+                            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>In Progress</div>
+                            <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-primary)' }}>
+                                {tickets.filter(t => t.status === 'In Progress').length}
+                            </div>
+                        </div>
+                        <div className="card" style={{ padding: 20, borderLeft: '4px solid var(--success)' }}>
+                            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>Resolved</div>
+                            <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--success)' }}>
+                                {tickets.filter(t => t.status === 'Resolved' || t.status === 'Closed').length}
+                            </div>
+                        </div>
+                        <div className="card" style={{ padding: 20, borderLeft: '4px solid var(--primary)' }}>
+                            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>Total Tickets</div>
+                            <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--primary)' }}>
+                                {tickets.length}
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <div className="search-filter-bar">
                     {['All', 'Open', 'In Progress', 'Resolved', 'Closed'].map(status => (
@@ -178,7 +207,7 @@ const HelpDesk = () => {
                 />
             )}
 
-        </DashboardLayout>
+        </>
     );
 };
 

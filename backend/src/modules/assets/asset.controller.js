@@ -14,6 +14,15 @@ exports.createAsset = async (req, res) => {
             cost
         });
 
+        // Invalidate Cache
+        const { getRedisClient } = require('../../shared/redis');
+        const redisClient = getRedisClient();
+        if (redisClient) {
+            redisClient.keys('__express__/api/v1/assets*').then(keys => {
+                if (keys.length > 0) redisClient.del(keys);
+            }).catch(err => console.error('Cache invalidation error', err));
+        }
+
         res.status(201).json({ success: true, data: asset });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -64,6 +73,16 @@ exports.updateAsset = async (req, res) => {
         
         // Return populated version
         const updatedAsset = await Asset.findById(asset._id).populate('assignedTo', 'name email department');
+
+        // Invalidate Cache
+        const { getRedisClient } = require('../../shared/redis');
+        const redisClient = getRedisClient();
+        if (redisClient) {
+            redisClient.keys('__express__/api/v1/assets*').then(keys => {
+                if (keys.length > 0) redisClient.del(keys);
+            }).catch(err => console.error('Cache invalidation error', err));
+        }
+
         res.status(200).json({ success: true, data: updatedAsset });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -82,6 +101,16 @@ exports.deleteAsset = async (req, res) => {
         }
 
         await asset.deleteOne();
+
+        // Invalidate Cache
+        const { getRedisClient } = require('../../shared/redis');
+        const redisClient = getRedisClient();
+        if (redisClient) {
+            redisClient.keys('__express__/api/v1/assets*').then(keys => {
+                if (keys.length > 0) redisClient.del(keys);
+            }).catch(err => console.error('Cache invalidation error', err));
+        }
+
         res.status(200).json({ success: true, data: {} });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

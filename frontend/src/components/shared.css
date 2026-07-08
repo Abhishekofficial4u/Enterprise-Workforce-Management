@@ -1,4 +1,9 @@
 /* ─── Shared Page Styles ─── */
+select option {
+  background: var(--bg);
+  color: var(--text-primary);
+}
+
 .page-header {
   display: flex;
   align-items: center;

@@ -1,25 +1,50 @@
 const express = require('express');
 const router = express.Router();
 const employeeController = require('./employee.controller');
+const documentController = require('./document.controller');
 const { protect, authorize } = require('../../middlewares/auth.middleware');
+const auditLog = require('../../middlewares/audit.middleware');
+const cache = require('../../middlewares/cache.middleware');
 
 // Protect all routes
 router.use(protect);
 
 // Routes
 router.route('/employees')
-    .get(employeeController.getEmployees)
-    .post(authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), employeeController.createEmployee);
+    .get(cache(60), employeeController.getEmployees)
+    .post(authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), auditLog('CREATE_EMPLOYEE', 'EMPLOYEES'), employeeController.createEmployee);
 
 router.route('/employees/me')
     .get(employeeController.getMyProfile)
     .put(employeeController.updateMyProfile);
 
 router.route('/employees/:id')
-    .put(authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), employeeController.updateEmployee)
-    .delete(authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), employeeController.archiveEmployee);
+    .put(authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), auditLog('UPDATE_EMPLOYEE', 'EMPLOYEES'), employeeController.updateEmployee)
+    .delete(authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), auditLog('ARCHIVE_EMPLOYEE', 'EMPLOYEES'), employeeController.archiveEmployee);
 
 router.route('/employees/:id/permanent')
-    .delete(authorize('SUPER_ADMIN'), employeeController.deleteEmployee);
+    .delete(authorize('SUPER_ADMIN'), auditLog('DELETE_EMPLOYEE', 'EMPLOYEES'), employeeController.deleteEmployee);
+
+const multer = require('multer');
+const path = require('path');
+
+// Multer Config
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, '../../../uploads/'));
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
+
+// Documents
+router.route('/employees/:employeeId/documents')
+    .get(protect, documentController.getDocumentsByEmployee)
+    .post(authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN', 'EMPLOYEE'), upload.single('file'), auditLog('ADD_DOCUMENT', 'DOCUMENTS'), documentController.addDocument);
+
+router.route('/documents/:id')
+    .delete(authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), auditLog('DELETE_DOCUMENT', 'DOCUMENTS'), documentController.deleteDocument);
 
 module.exports = router;

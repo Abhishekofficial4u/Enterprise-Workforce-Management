@@ -11,7 +11,7 @@ router.get('/my', performanceController.getMyReviews);
 router.patch('/:id/acknowledge', performanceController.acknowledgeReview);
 
 // Manager / Admin routes
-router.post('/', authorize('HR_MANAGER', 'SUPER_ADMIN'), performanceController.createReview);
-router.get('/', authorize('HR_MANAGER', 'SUPER_ADMIN'), performanceController.getAllReviews);
+router.post('/', authorize('HR_MANAGER', 'SUPER_ADMIN', 'MANAGER'), performanceController.createReview);
+router.get('/', authorize('HR_MANAGER', 'SUPER_ADMIN', 'MANAGER'), performanceController.getAllReviews);
 
 module.exports = router;

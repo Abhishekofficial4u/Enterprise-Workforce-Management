@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getMyReviews, getAllReviews, acknowledgeReview } from './api/performanceService';
 import CreateReviewModal from './components/CreateReviewModal';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
-import DashboardLayout from '../../layouts/DashboardLayout';
+import { Target, TrendingUp, Users, Award } from 'lucide-react';
 import './Performance.css';
 
 const PerformanceHome = () => {
@@ -55,8 +55,15 @@ const PerformanceHome = () => {
         ];
     };
 
+    // Calculate Admin KPIs
+    const avgScore = reviews.length > 0 ? (reviews.reduce((acc, r) => acc + r.overallScore, 0) / reviews.length).toFixed(1) : 0;
+    const pendingCount = reviews.filter(r => r.status === 'Submitted').length;
+    
+    // Sort for leaderboard
+    const topPerformers = [...reviews].sort((a, b) => b.overallScore - a.overallScore).slice(0, 3);
+
     return (
-        <DashboardLayout title="Performance">
+        <>
             <div className="perf-container">
                 <div className="perf-header">
                 <div>
@@ -71,6 +78,61 @@ const PerformanceHome = () => {
             </div>
 
             <div className="perf-content">
+                {isAdmin && reviews.length > 0 && (
+                    <>
+                        <div className="perf-kpi-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20, marginBottom: 30 }}>
+                            <div className="ewm-card" style={{ padding: 20, display: 'flex', alignItems: 'center', gap: 15 }}>
+                                <div style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary)', padding: 15, borderRadius: 12 }}>
+                                    <Target size={24} />
+                                </div>
+                                <div>
+                                    <h4 style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500 }}>Company Average</h4>
+                                    <h2 style={{ margin: '5px 0 0 0', color: 'var(--text-primary)' }}>{avgScore} / 5.0</h2>
+                                </div>
+                            </div>
+                            <div className="ewm-card" style={{ padding: 20, display: 'flex', alignItems: 'center', gap: 15 }}>
+                                <div style={{ background: 'rgba(234, 179, 8, 0.1)', color: '#eab308', padding: 15, borderRadius: 12 }}>
+                                    <Users size={24} />
+                                </div>
+                                <div>
+                                    <h4 style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500 }}>Pending Acks</h4>
+                                    <h2 style={{ margin: '5px 0 0 0', color: 'var(--text-primary)' }}>{pendingCount}</h2>
+                                </div>
+                            </div>
+                            <div className="ewm-card" style={{ padding: 20, display: 'flex', alignItems: 'center', gap: 15 }}>
+                                <div style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', padding: 15, borderRadius: 12 }}>
+                                    <TrendingUp size={24} />
+                                </div>
+                                <div>
+                                    <h4 style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500 }}>Total Reviews</h4>
+                                    <h2 style={{ margin: '5px 0 0 0', color: 'var(--text-primary)' }}>{reviews.length}</h2>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="ewm-card" style={{ padding: 24, marginBottom: 30 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                                <Award style={{ color: '#eab308' }} />
+                                <h3 style={{ margin: 0, color: 'var(--text-primary)' }}>Top Performers</h3>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 20 }}>
+                                {topPerformers.map((r, idx) => (
+                                    <div key={`top-${r._id}`} style={{ display: 'flex', alignItems: 'center', gap: 15, background: 'var(--bg)', padding: 15, borderRadius: 8, border: '1px solid var(--border)' }}>
+                                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: idx === 0 ? '#eab308' : 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                                            {idx + 1}
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <h4 style={{ margin: 0, color: 'var(--text-primary)', fontSize: 14 }}>{r.employeeId?.name || 'Unknown'}</h4>
+                                            <p style={{ margin: '2px 0 0 0', color: 'var(--text-muted)', fontSize: 12 }}>{r.reviewCycle} {r.year}</p>
+                                        </div>
+                                        <div style={{ fontWeight: 'bold', color: 'var(--primary)' }}>{r.overallScore}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </>
+                )}
+
                 {loading ? (
                     <div className="loading-state">Loading performance data...</div>
                 ) : reviews.length === 0 ? (
@@ -140,7 +202,7 @@ const PerformanceHome = () => {
                 />
             )}
             </div>
-        </DashboardLayout>
+        </>
     );
 };
 

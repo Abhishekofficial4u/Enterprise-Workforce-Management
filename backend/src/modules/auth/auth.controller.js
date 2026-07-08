@@ -308,7 +308,8 @@ exports.seedRolesRoute = async (req, res) => {
                 description: 'Full system access',
                 permissions: [
                     'manage_users', 'manage_roles', 'view_all_data', 'manage_employees', 
-                    'approve_payroll', 'manage_projects', 'view_reports', 'manage_assets', 'manage_helpdesk'
+                    'approve_payroll', 'manage_projects', 'view_reports', 'manage_assets', 
+                    'manage_helpdesk', 'manage_recruitment', 'view_performance', 'manage_payroll', 'manage_attendance'
                 ]
             },
             {

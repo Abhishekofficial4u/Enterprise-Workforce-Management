@@ -1,0 +1,169 @@
+.org-chart-container {
+    padding: 24px;
+    background: var(--bg);
+    min-height: 80vh;
+}
+
+.org-tree-wrapper {
+    display: flex;
+    justify-content: center;
+    overflow-x: auto;
+    padding: 20px 0 60px 0;
+}
+
+.org-tree-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    padding: 24px 16px 0 16px; /* Top padding is for vertical lines */
+}
+
+/* Vertical line from child to horizontal connector */
+.org-tree-node::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 2px;
+    height: 24px;
+    background-color: var(--border);
+    transform: translateX(-50%);
+}
+
+/* Horizontal connecting lines */
+.org-tree-node::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--border);
+}
+
+/* Fix horizontal lines for first and last children */
+.org-tree-node:first-child::after {
+    left: 50%;
+    width: 50%;
+}
+.org-tree-node:last-child::after {
+    left: 0;
+    width: 50%;
+}
+.org-tree-node:only-child::after {
+    display: none;
+}
+/* Also, only child doesn't need the top vertical line if it's the root */
+.org-tree-wrapper > .org-tree-node::before, 
+.org-tree-wrapper > .org-tree-node::after {
+    display: none;
+}
+.org-tree-wrapper > .org-tree-node {
+    padding-top: 0;
+}
+
+.org-children {
+    display: flex;
+    justify-content: center;
+    position: relative;
+    padding-top: 24px; /* Space for the vertical line coming from the parent */
+}
+
+/* Vertical line going down from parent */
+.org-children::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 2px;
+    height: 24px;
+    background-color: var(--border);
+    transform: translateX(-50%);
+}
+
+
+.org-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    width: 220px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    position: relative;
+    z-index: 2;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.org-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border-color: var(--primary);
+}
+
+.org-card-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+}
+
+.org-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--bg);
+    border: 2px solid var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.org-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.org-avatar-placeholder {
+    color: var(--text-muted);
+}
+
+.org-info h4 {
+    margin: 0 0 4px 0;
+    color: var(--text-primary);
+    font-size: 15px;
+}
+
+.org-info p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.org-expand-btn {
+    position: absolute;
+    bottom: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 28px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    cursor: pointer;
+    z-index: 3;
+    transition: all 0.2s;
+}
+
+.org-expand-btn:hover {
+    background: var(--bg);
+    color: var(--primary);
+    border-color: var(--primary);
+}

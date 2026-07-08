@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import DashboardLayout from '../../layouts/DashboardLayout';
+import React, { useState, useEffect, useMemo } from 'react';
 import { generatePayroll, getMyPayslips, getAllPayrolls, updatePayrollStatus } from './api/payrollService';
 import { getEmployees } from '../employees/api/employeeService';
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
 import '../../components/shared.css';
 
 const Payroll = () => {
@@ -12,6 +12,9 @@ const Payroll = () => {
     const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
+    const [aiResult, setAiResult] = useState(null);
+    const [analyzing, setAnalyzing] = useState(false);
 
     // Generate Form State
     const [selectedEmployee, setSelectedEmployee] = useState('');
@@ -49,7 +52,6 @@ const Payroll = () => {
         setError('');
         try {
             await generatePayroll({ employeeId: selectedEmployee, payPeriod });
-            // Refresh list
             fetchData();
             setSelectedEmployee('');
             alert('Payroll generated successfully!');
@@ -60,19 +62,118 @@ const Payroll = () => {
         }
     };
 
+    const handleAIAudit = async () => {
+        try {
+            setAnalyzing(true);
+            const token = localStorage.getItem('userToken');
+            const res = await fetch(`https://enterprise-workforce-management.onrender.com/api/v1/time-payroll/payroll/ai-audit`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const result = await res.json();
+            if (result.success) {
+                setAiResult(result.data);
+            } else {
+                alert(result.message || 'AI Audit failed');
+            }
+        } catch (error) {
+            alert('Error running AI audit');
+        } finally {
+            setAnalyzing(false);
+        }
+    };
+
     const handleStatusUpdate = async (id, newStatus) => {
         try {
             await updatePayrollStatus(id, newStatus);
-            fetchData(); // Refresh list
+            fetchData(); 
         } catch (err) {
             alert('Error updating status');
         }
     };
 
+    // Calculate aggregated stats
+    const totalDisbursed = useMemo(() => {
+        return payrolls.filter(p => p.status === 'Paid').reduce((acc, curr) => acc + (curr.netSalary || 0), 0);
+    }, [payrolls]);
+
+    const pendingReview = useMemo(() => {
+        return payrolls.filter(p => p.status === 'Pending' || p.status === 'Draft').length;
+    }, [payrolls]);
+
+    // Department wise expenditure for chart
+    const deptStats = useMemo(() => {
+        if (!isAdmin || !payrolls.length) return [];
+        const map = {};
+        payrolls.forEach(p => {
+            const dept = p.employeeId?.department || 'Unknown';
+            map[dept] = (map[dept] || 0) + (p.netSalary || 0);
+        });
+        return Object.keys(map).map(dept => ({ name: dept, total: map[dept] })).sort((a,b) => b.total - a.total);
+    }, [payrolls, isAdmin]);
+
+    const colors = ['#6366f1', '#10b981', '#f59e0b', '#0ea5e9', '#8b5cf6'];
+
     return (
-        <DashboardLayout title="Payroll & Salary">
-            <div className="shared-container">
-                {error && <div className="alert-error">{error}</div>}
+        <>
+            <div>
+                <div className="page-header">
+                    <div className="page-header-left">
+                        <h1>{isAdmin ? 'Payroll Management' : 'My Payslips'}</h1>
+                        <p>{isAdmin ? 'Manage, generate, and audit organizational payrolls' : 'View and download your salary slips'}</p>
+                    </div>
+                </div>
+
+                {error && <div className="alert-error" style={{marginBottom: 20}}>⚠️ {error}</div>}
+
+                {/* KPI Cards */}
+                {isAdmin && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 24 }}>
+                        <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)' }}>
+                            <div style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 8 }}>Total Disbursed (Paid)</div>
+                            <div style={{ fontSize: 28, fontWeight: 700, color: '#10b981' }}>
+                                ${totalDisbursed.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                            </div>
+                        </div>
+                        <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)' }}>
+                            <div style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 8 }}>Pending / Draft Slips</div>
+                            <div style={{ fontSize: 28, fontWeight: 700, color: '#f59e0b' }}>
+                                {pendingReview}
+                            </div>
+                        </div>
+                        <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)' }}>
+                            <div style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 8 }}>Total Payrolls Generated</div>
+                            <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--primary)' }}>
+                                {payrolls.length}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Optional Chart */}
+                {isAdmin && deptStats.length > 0 && (
+                    <div style={{ background: 'var(--bg-card)', padding: 24, borderRadius: 12, border: '1px solid var(--border)', marginBottom: 24 }}>
+                        <h4 style={{ margin: '0 0 16px 0', fontSize: 15, color: 'var(--text-primary)' }}>Payroll Expenditure by Department</h4>
+                        <div style={{ height: 250 }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={deptStats}>
+                                    <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} />
+                                    <YAxis stroke="var(--text-muted)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v/1000}k`} />
+                                    <RechartsTooltip 
+                                        cursor={{fill: 'rgba(255,255,255,0.05)'}}
+                                        contentStyle={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--text-primary)' }}
+                                        formatter={(value) => [`$${value.toLocaleString()}`, 'Total Cost']}
+                                    />
+                                    <Bar dataKey="total" radius={[4, 4, 0, 0]}>
+                                        {deptStats.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                )}
 
                 {/* Admin/Finance Generate Section */}
                 {isAdmin && (
@@ -114,6 +215,11 @@ const Payroll = () => {
                 <div className="card">
                     <div className="card-header">
                         <span className="card-title">{isAdmin ? 'All Generated Payslips' : 'My Payslip History'}</span>
+                        {isAdmin && (
+                            <button className="ewm-btn-secondary" onClick={handleAIAudit} disabled={analyzing}>
+                                {analyzing ? 'Scanning...' : '✨ Run AI Audit'}
+                            </button>
+                        )}
                     </div>
 
                     {loading ? (
@@ -172,7 +278,47 @@ const Payroll = () => {
                     )}
                 </div>
             </div>
-        </DashboardLayout>
+
+            {/* AI Result Modal */}
+            {aiResult && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                    <div className="ewm-card" style={{ maxWidth: 600, width: '100%', padding: 32, maxHeight: '80vh', overflowY: 'auto' }}>
+                        <h2 style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--primary)', marginTop: 0 }}>
+                            ✨ AI Payroll Audit
+                        </h2>
+                        
+                        <div style={{ margin: '20px 0' }}>
+                            <p style={{ color: 'var(--text-primary)', fontSize: 16, lineHeight: 1.6, marginBottom: 24 }}>
+                                {aiResult.summary}
+                            </p>
+                            
+                            <h4 style={{ marginBottom: 12, color: 'var(--danger)' }}>Anomalies Detected ({aiResult.anomalies?.length || 0})</h4>
+                            
+                            {aiResult.anomalies?.length > 0 ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                    {aiResult.anomalies.map((anom, idx) => (
+                                        <div key={idx} style={{ background: 'var(--bg-card)', padding: 16, borderRadius: 8, borderLeft: `4px solid ${anom.severity === 'HIGH' ? 'var(--danger)' : 'var(--warning)'}` }}>
+                                            <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
+                                                {anom.severity} Severity <span style={{ color: 'var(--text-muted)', fontSize: 12, fontWeight: 400 }}>({anom.payrollId})</span>
+                                            </div>
+                                            <div style={{ color: 'var(--text-secondary)', fontSize: 14 }}>{anom.reason}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)', padding: 16, borderRadius: 8, fontWeight: 500 }}>
+                                    ✅ No significant anomalies detected in recent payrolls.
+                                </div>
+                            )}
+                        </div>
+                        
+                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <button className="ewm-btn" onClick={() => setAiResult(null)}>Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
     );
 };
 

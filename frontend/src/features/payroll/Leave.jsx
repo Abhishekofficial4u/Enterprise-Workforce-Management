@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import DashboardLayout from '../../layouts/DashboardLayout';
 import { applyLeave, getMyLeaves, getAllLeaves, updateLeaveStatus, getMyLeaveBalance } from './api/leaveService';
 import '../../components/shared.css';
 
@@ -11,6 +10,9 @@ const Leave = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [balances, setBalances] = useState({ casual: 0, sick: 0, earned: 0 });
+
+    const [aiResult, setAiResult] = useState(null);
+    const [analyzingId, setAnalyzingId] = useState(null);
 
     // Apply Leave Form State
     const [leaveType, setLeaveType] = useState('Casual Leave');
@@ -60,6 +62,27 @@ const Leave = () => {
         }
     };
 
+    const handleAIPredict = async (leaveId) => {
+        try {
+            setAnalyzingId(leaveId);
+            const token = localStorage.getItem('userToken');
+            const res = await fetch(`https://enterprise-workforce-management.onrender.com/api/v1/time-payroll/leave/${leaveId}/ai-prediction`, {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const result = await res.json();
+            if (result.success) {
+                setAiResult(result.data);
+            } else {
+                alert(result.message || 'AI Prediction failed');
+            }
+        } catch (error) {
+            alert('Error running AI prediction');
+        } finally {
+            setAnalyzingId(null);
+        }
+    };
+
     const handleStatusUpdate = async (id, newStatus) => {
         try {
             await updateLeaveStatus(id, newStatus);
@@ -70,9 +93,16 @@ const Leave = () => {
     };
 
     return (
-        <DashboardLayout title="Leave Management">
-            <div className="shared-container">
-                {error && <div className="alert-error">{error}</div>}
+        <>
+            <div>
+                <div className="page-header">
+                    <div className="page-header-left">
+                        <h1>{isAdmin ? 'Leave Requests' : 'My Leaves'}</h1>
+                        <p>{isAdmin ? 'Manage and approve organizational leave requests' : 'Apply and track your leave status'}</p>
+                    </div>
+                </div>
+
+                {error && <div className="alert-error" style={{marginBottom: 20}}>⚠️ {error}</div>}
 
                 {/* Leave Balances Section */}
                 {!isAdmin && (
@@ -173,7 +203,7 @@ const Leave = () => {
                                                 {leave.reason}
                                             </td>
                                             <td>
-                                                <span className={`status-badge ${leave.status.toLowerCase()}`}>{leave.status}</span>
+                                                <span className={`badge badge-${leave.status.toLowerCase()}`}>{leave.status}</span>
                                             </td>
                                             {isAdmin && (
                                                 <td>
@@ -181,6 +211,14 @@ const Leave = () => {
                                                         <div style={{ display: 'flex', gap: '8px' }}>
                                                             <button className="btn-primary" onClick={() => handleStatusUpdate(leave._id, 'Approved')} style={{ padding: '4px 8px', fontSize: '12px', background: 'var(--success)' }}>Approve</button>
                                                             <button className="btn-secondary" onClick={() => handleStatusUpdate(leave._id, 'Rejected')} style={{ padding: '4px 8px', fontSize: '12px', background: 'var(--danger)', color: 'white', border: 'none' }}>Reject</button>
+                                                            <button 
+                                                                className="ewm-btn-secondary" 
+                                                                onClick={() => handleAIPredict(leave._id)} 
+                                                                style={{ padding: '4px 8px', fontSize: '12px' }}
+                                                                disabled={analyzingId === leave._id}
+                                                            >
+                                                                {analyzingId === leave._id ? '...' : '✨ Predict AI'}
+                                                            </button>
                                                         </div>
                                                     ) : (
                                                         <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Reviewed</span>
@@ -195,7 +233,31 @@ const Leave = () => {
                     )}
                 </div>
             </div>
-        </DashboardLayout>
+
+            {/* AI Result Modal */}
+            {aiResult && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+                    <div className="ewm-card" style={{ maxWidth: 500, padding: 32 }}>
+                        <h2 style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--primary)', marginTop: 0 }}>
+                            ✨ AI Leave Prediction
+                        </h2>
+                        
+                        <div style={{ margin: '20px 0' }}>
+                            <h3 style={{ fontSize: 48, fontWeight: 800, margin: '0 0 16px 0', color: aiResult.probability > 70 ? 'var(--success)' : (aiResult.probability > 40 ? 'var(--warning)' : 'var(--danger)') }}>
+                                {aiResult.probability}% Approval Probability
+                            </h3>
+                            
+                            <h4 style={{ marginBottom: 8, color: 'var(--text-secondary)' }}>AI Reasoning:</h4>
+                            <p style={{ color: 'var(--text-primary)', lineHeight: 1.6 }}>{aiResult.reasoning}</p>
+                        </div>
+                        
+                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <button className="ewm-btn" onClick={() => setAiResult(null)}>Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
     );
 };
 

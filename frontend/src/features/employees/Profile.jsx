@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import DashboardLayout from '../../layouts/DashboardLayout';
 import { getMyProfile, updateMyProfile } from './api/employeeService';
+import DocumentsManager from './components/DocumentsManager';
 import '../../components/shared.css';
 
 const Profile = () => {
@@ -11,9 +11,10 @@ const Profile = () => {
     const [success, setSuccess] = useState('');
     
     const [formData, setFormData] = useState({
+        name: '',
         profilePhoto: '',
         bio: '',
-        skills: '' // We will keep it as a comma-separated string for editing
+        skills: [] // Array of { name, level }
     });
     
     const fileInputRef = useRef(null);
@@ -24,9 +25,10 @@ const Profile = () => {
                 const res = await getMyProfile();
                 setProfile(res.data);
                 setFormData({
+                    name: res.data.name || '',
                     profilePhoto: res.data.profilePhoto || '',
                     bio: res.data.bio || '',
-                    skills: (res.data.skills || []).join(', ')
+                    skills: res.data.skills || []
                 });
             } catch (err) {
                 setError('Failed to load profile');
@@ -39,6 +41,24 @@ const Profile = () => {
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleAddSkill = () => {
+        setFormData({
+            ...formData,
+            skills: [...formData.skills, { name: '', level: 'Intermediate' }]
+        });
+    };
+
+    const handleSkillChange = (index, field, value) => {
+        const newSkills = [...formData.skills];
+        newSkills[index][field] = value;
+        setFormData({ ...formData, skills: newSkills });
+    };
+
+    const handleRemoveSkill = (index) => {
+        const newSkills = formData.skills.filter((_, i) => i !== index);
+        setFormData({ ...formData, skills: newSkills });
     };
 
     const handlePhotoChange = (e) => {
@@ -60,9 +80,10 @@ const Profile = () => {
 
         try {
             const payload = {
+                name: formData.name,
                 profilePhoto: formData.profilePhoto,
                 bio: formData.bio,
-                skills: formData.skills.split(',').map(s => s.trim()).filter(s => s)
+                skills: formData.skills.filter(s => s.name.trim() !== '')
             };
             const res = await updateMyProfile(payload);
             setProfile(res.data);
@@ -77,24 +98,24 @@ const Profile = () => {
 
     if (loading) {
         return (
-            <DashboardLayout title="My Profile">
+            <>
                 <div style={{ padding: 40, textAlign: 'center' }}>Loading...</div>
-            </DashboardLayout>
+            </>
         );
     }
 
     if (!profile) {
         return (
-            <DashboardLayout title="My Profile">
+            <>
                 <div className="alert-error">Failed to load profile data.</div>
-            </DashboardLayout>
+            </>
         );
     }
 
     const initials = profile.name.split(' ').map(n => n[0]).join('').toUpperCase();
 
     return (
-        <DashboardLayout title="My Profile">
+        <>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 30 }}>
                 
                 {/* Left Column: Readonly Card */}
@@ -142,6 +163,19 @@ const Profile = () => {
                     
                     <form onSubmit={handleSave}>
                         <div className="form-group" style={{ marginBottom: 20 }}>
+                            <label className="form-label" style={{ display: 'block', marginBottom: 8, color: 'var(--text-secondary)', fontSize: 14 }}>Full Name</label>
+                            <input 
+                                type="text"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleChange}
+                                placeholder="Your full name"
+                                style={{ width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-primary)', padding: 12, borderRadius: 8 }}
+                                required
+                            />
+                        </div>
+
+                        <div className="form-group" style={{ marginBottom: 20 }}>
                             <label className="form-label" style={{ display: 'block', marginBottom: 8, color: 'var(--text-secondary)', fontSize: 14 }}>Professional Bio</label>
                             <textarea 
                                 name="bio"
@@ -153,15 +187,41 @@ const Profile = () => {
                         </div>
 
                         <div className="form-group" style={{ marginBottom: 30 }}>
-                            <label className="form-label" style={{ display: 'block', marginBottom: 8, color: 'var(--text-secondary)', fontSize: 14 }}>Skills (Comma separated)</label>
-                            <input 
-                                type="text"
-                                name="skills"
-                                value={formData.skills}
-                                onChange={handleChange}
-                                placeholder="e.g. ReactJS, Python, Project Management"
-                                style={{ width: '100%', background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-primary)', padding: 12, borderRadius: 8 }}
-                            />
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
+                                <label className="form-label" style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 14 }}>Skill Matrix</label>
+                                <button type="button" onClick={handleAddSkill} style={{ background: 'transparent', border: '1px solid var(--primary)', color: 'var(--primary)', padding: '4px 10px', borderRadius: 4, cursor: 'pointer', fontSize: 12 }}>+ Add Skill</button>
+                            </div>
+                            
+                            {formData.skills.map((skill, index) => (
+                                <div key={index} style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+                                    <input 
+                                        type="text"
+                                        value={skill.name}
+                                        onChange={(e) => handleSkillChange(index, 'name', e.target.value)}
+                                        placeholder="e.g. ReactJS"
+                                        style={{ flex: 1, background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-primary)', padding: '8px 12px', borderRadius: 8 }}
+                                    />
+                                    <select 
+                                        value={skill.level}
+                                        onChange={(e) => handleSkillChange(index, 'level', e.target.value)}
+                                        style={{ width: 140, background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-primary)', padding: '8px 12px', borderRadius: 8 }}
+                                    >
+                                        <option value="Beginner">Beginner</option>
+                                        <option value="Intermediate">Intermediate</option>
+                                        <option value="Expert">Expert</option>
+                                    </select>
+                                    <button 
+                                        type="button"
+                                        onClick={() => handleRemoveSkill(index)}
+                                        style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0 8px', fontSize: 16 }}
+                                    >×</button>
+                                </div>
+                            ))}
+                            {formData.skills.length === 0 && (
+                                <div style={{ color: 'var(--text-muted)', fontSize: 13, fontStyle: 'italic', padding: 10, background: 'var(--bg)', borderRadius: 8, textAlign: 'center' }}>
+                                    No skills added yet. Add skills to build your matrix!
+                                </div>
+                            )}
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -170,9 +230,11 @@ const Profile = () => {
                             </button>
                         </div>
                     </form>
+                    
+                    <DocumentsManager employeeId={profile._id} />
                 </div>
             </div>
-        </DashboardLayout>
+        </>
     );
 };
 

@@ -1,5 +1,6 @@
 const Payroll = require('./payroll.model');
 const Employee = require('../hr/employee.model');
+const aiPayroll = require('../ai/ai.payroll');
 const Attendance = require('./attendance.model');
 
 // @desc    Generate payroll (Manual Trigger for Phase 1)
@@ -112,6 +113,27 @@ exports.updatePayrollStatus = async (req, res) => {
         }
 
         res.status(200).json({ success: true, data: payroll, message: `Payroll status updated to ${status}` });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Run AI Audit on recent payrolls
+// @route   POST /api/v1/time-payroll/payroll/ai-audit
+// @access  Private (FINANCE, ADMIN)
+exports.runAIAudit = async (req, res) => {
+    try {
+        const payrolls = await Payroll.find()
+            .populate('employeeId', 'name')
+            .sort({ createdAt: -1 })
+            .limit(20);
+
+        if (!payrolls || payrolls.length === 0) {
+            return res.status(404).json({ success: false, message: 'No payrolls to analyze' });
+        }
+
+        const aiAnalysis = await aiPayroll.detectPayrollAnomalies(payrolls);
+        res.status(200).json({ success: true, data: aiAnalysis });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

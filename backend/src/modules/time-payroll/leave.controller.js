@@ -1,5 +1,7 @@
 const Leave = require('./leave.model');
 const sendEmail = require('../../utils/emailService');
+const Employee = require('../hr/employee.model');
+const aiLeave = require('../ai/ai.leave');
 
 // @desc    Apply for leave
 // @route   POST /api/v1/time-payroll/leave
@@ -173,6 +175,37 @@ exports.getMyLeaveBalance = async (req, res) => {
             success: true, 
             data: employee.leaveBalance || { casual: 0, sick: 0, earned: 0 } 
         });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Predict Leave Approval using AI
+// @route   GET /api/v1/time-payroll/leave/:id/ai-prediction
+// @access  Private (MANAGER, HR)
+exports.predictLeave = async (req, res) => {
+    try {
+        const leave = await Leave.findById(req.params.id).populate('employeeId', 'department name');
+        if (!leave) return res.status(404).json({ success: false, message: 'Leave request not found' });
+
+        const employee = await Employee.findById(leave.employeeId._id);
+        
+        // Mock team stats for now
+        const teamStats = { totalMembers: 12, onLeave: 2 };
+        
+        const empStats = { 
+            sickTaken: employee.leaveBalance?.sick ? (10 - employee.leaveBalance.sick) : 0 
+        };
+
+        const duration = (new Date(leave.endDate) - new Date(leave.startDate)) / (1000 * 60 * 60 * 24) + 1;
+
+        const aiPrediction = await aiLeave.predictLeaveApproval({
+            leaveType: leave.leaveType,
+            duration: duration,
+            reason: leave.reason
+        }, empStats, teamStats);
+
+        res.status(200).json({ success: true, data: aiPrediction });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

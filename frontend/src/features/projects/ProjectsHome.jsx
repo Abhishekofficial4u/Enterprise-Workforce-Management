@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../layouts/DashboardLayout';
 import { getProjects, createProject } from './api/projectService';
 import { getEmployees } from '../employees/api/employeeService';
 import './ProjectsHome.css';
@@ -71,15 +70,48 @@ const ProjectsHome = () => {
     };
 
     return (
-        <DashboardLayout title="Projects">
+        <>
             <div className="projects-container">
-                <div className="projects-header">
-                    <h2>Active Projects</h2>
+                <div className="page-header" style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div className="page-header-left">
+                        <h1>Project Management</h1>
+                        <p>Track, manage, and deliver internal and client projects</p>
+                    </div>
                     {canCreateProject && (
-                        <button className="btn btn-primary" onClick={() => setIsCreateModalOpen(true)}>
-                            + New Project
-                        </button>
+                        <div>
+                            <button className="btn-primary" onClick={() => setIsCreateModalOpen(true)}>
+                                ➕ New Project
+                            </button>
+                        </div>
                     )}
+                </div>
+
+                {/* KPI Cards */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+                    <div className="card" style={{ padding: 20, borderLeft: '4px solid var(--primary)' }}>
+                        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>Total Projects</div>
+                        <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-primary)' }}>
+                            {projects.length}
+                        </div>
+                    </div>
+                    <div className="card" style={{ padding: 20, borderLeft: '4px solid #f59e0b' }}>
+                        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>Planning</div>
+                        <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-primary)' }}>
+                            {projects.filter(p => p.status === 'Planning').length}
+                        </div>
+                    </div>
+                    <div className="card" style={{ padding: 20, borderLeft: '4px solid #3b82f6' }}>
+                        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>Active</div>
+                        <div style={{ fontSize: 28, fontWeight: 700, color: '#3b82f6' }}>
+                            {projects.filter(p => p.status === 'Active' || p.status === 'In Progress').length}
+                        </div>
+                    </div>
+                    <div className="card" style={{ padding: 20, borderLeft: '4px solid #10b981' }}>
+                        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>Completed</div>
+                        <div style={{ fontSize: 28, fontWeight: 700, color: '#10b981' }}>
+                            {projects.filter(p => p.status === 'Completed').length}
+                        </div>
+                    </div>
                 </div>
 
                 {loading ? (
@@ -192,7 +224,7 @@ const ProjectsHome = () => {
                     </div>
                 </div>
             )}
-        </DashboardLayout>
+        </>
     );
 };
 

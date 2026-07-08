@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import DashboardLayout from '../../layouts/DashboardLayout';
 import { Bot, User, Send, Loader2, Sparkles } from 'lucide-react';
 import '../../components/shared.css';
 
@@ -58,7 +57,7 @@ const AiAssistant = () => {
     };
 
     return (
-        <DashboardLayout title="AI Operations Assistant">
+        <>
             <div className="page-header" style={{ marginBottom: 15 }}>
                 <div className="page-header-left">
                     <h1 style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -166,7 +165,7 @@ const AiAssistant = () => {
                     </form>
                 </div>
             </div>
-        </DashboardLayout>
+        </>
     );
 };
 

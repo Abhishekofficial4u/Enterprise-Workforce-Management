@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import DashboardLayout from '../../layouts/DashboardLayout';
 import { getDashboardStats } from './api/reportService';
 import { 
     PieChart, Pie, Cell, Tooltip, Legend,
@@ -66,25 +65,25 @@ const Reports = () => {
 
     if (loading) {
         return (
-            <DashboardLayout title="Reports & Analytics">
+            <>
                 <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
                     <div className="spinner" style={{ margin: '0 auto 10px' }}></div>
                     Loading Analytics...
                 </div>
-            </DashboardLayout>
+            </>
         );
     }
 
     if (error) {
         return (
-            <DashboardLayout title="Reports & Analytics">
+            <>
                 <div className="alert-error">⚠️ {error}</div>
-            </DashboardLayout>
+            </>
         );
     }
 
     return (
-        <DashboardLayout title="Reports & Analytics">
+        <>
             <div>
                 <div className="page-header">
                     <div className="page-header-left">
@@ -202,10 +201,45 @@ const Reports = () => {
                             </ResponsiveContainer>
                         </div>
                     </div>
-
                 </div>
+
+                {/* Predictive Analytics Section */}
+                {data.predictive && data.predictive.burnoutRisk && (
+                    <div style={{ marginTop: 30, background: 'var(--bg-card)', padding: 24, borderRadius: 12, border: '1px solid var(--border)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                            <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: 8, borderRadius: 8 }}>
+                                🔥
+                            </div>
+                            <h3 style={{ margin: 0, color: 'var(--text-primary)' }}>Predictive Analytics: Burnout Risk</h3>
+                        </div>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 20 }}>
+                            The system has identified these employees as having a high probability of burnout based on untaken leave balances and continuous work periods.
+                        </p>
+                        
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 20 }}>
+                            {data.predictive.burnoutRisk.map((emp, idx) => (
+                                <div key={`risk-${idx}`} className="ewm-card" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10, borderLeft: `4px solid ${emp.riskScore > 80 ? '#ef4444' : '#f59e0b'}` }}>
+                                    <div>
+                                        <h4 style={{ margin: 0, color: 'var(--text-primary)' }}>{emp.name}</h4>
+                                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{emp.role} • {emp.department}</div>
+                                    </div>
+                                    
+                                    <div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
+                                            <span style={{ color: 'var(--text-secondary)' }}>Risk Score</span>
+                                            <span style={{ fontWeight: 'bold', color: emp.riskScore > 80 ? '#ef4444' : '#f59e0b' }}>{emp.riskScore}%</span>
+                                        </div>
+                                        <div style={{ width: '100%', background: 'var(--bg)', height: 6, borderRadius: 3, overflow: 'hidden' }}>
+                                            <div style={{ width: `${emp.riskScore}%`, background: emp.riskScore > 80 ? '#ef4444' : '#f59e0b', height: '100%' }}></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
-        </DashboardLayout>
+        </>
     );
 };
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../../layouts/DashboardLayout';
 import { getProject, updateTask, createTask, updateProject, deleteProject } from '../api/projectService';
 import { getEmployees } from '../../employees/api/employeeService';
 import TaskModal from './TaskModal';
@@ -140,15 +139,15 @@ const ProjectKanban = () => {
     };
 
     if (loading) {
-        return <DashboardLayout title="Project Kanban"><div className="loading">Loading board...</div></DashboardLayout>;
+        return <><div className="loading">Loading board...</div></>;
     }
 
     if (!project) {
-        return <DashboardLayout title="Project Not Found"><div className="error">Project not found</div></DashboardLayout>;
+        return <><div className="error">Project not found</div></>;
     }
 
     return (
-        <DashboardLayout title={`Project: ${project.name}`}>
+        <>
             <div className="kanban-container">
                 <div className="kanban-header">
                     <div>
@@ -291,7 +290,7 @@ const ProjectKanban = () => {
                     </div>
                 </div>
             )}
-        </DashboardLayout>
+        </>
     );
 };
 

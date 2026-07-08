@@ -6,8 +6,13 @@ export const login = async (email, password) => {
     const response = await axios.post(`${API_URL}/login`, { email, password });
     if (response.data.token) {
         localStorage.setItem('userToken', response.data.token);
-        localStorage.setItem('userRole', response.data.role); // Legacy fallback
-        localStorage.setItem('userRoles', JSON.stringify(response.data.roles || []));
+        
+        const roles = response.data.roles || [];
+        // Prioritize modern roles array over legacy string, as legacy string defaults to EMPLOYEE
+        const primaryRole = (roles.length > 0 ? roles[0] : response.data.role) || 'EMPLOYEE';
+        
+        localStorage.setItem('userRole', primaryRole);
+        localStorage.setItem('userRoles', JSON.stringify(roles));
         localStorage.setItem('userPermissions', JSON.stringify(response.data.permissions || []));
     }
     return response.data;

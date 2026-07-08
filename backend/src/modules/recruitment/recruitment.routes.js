@@ -15,8 +15,9 @@ router.get('/jobs', recruitmentController.getJobs);
 router.patch('/jobs/:id/status', recruitmentController.updateJobStatus);
 
 // Candidate Routes
-router.post('/candidates', recruitmentController.createCandidate);
-router.get('/jobs/:jobId/candidates', recruitmentController.getCandidatesByJob);
-router.patch('/candidates/:id/stage', recruitmentController.updateCandidateStage);
+router.post('/candidates', authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), recruitmentController.createCandidate);
+router.get('/jobs/:jobId/candidates', authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), recruitmentController.getCandidatesByJob);
+router.put('/candidates/:id/stage', authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), recruitmentController.updateCandidateStage);
+router.post('/candidates/:id/ai-screen', authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), recruitmentController.aiScreenCandidate);
 
 module.exports = router;

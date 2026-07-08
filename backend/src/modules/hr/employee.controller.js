@@ -50,6 +50,15 @@ exports.createEmployee = async (req, res) => {
             console.error('Welcome email failed to send:', emailErr);
         });
 
+        // Invalidate Cache
+        const { getRedisClient } = require('../../shared/redis');
+        const redisClient = getRedisClient();
+        if (redisClient) {
+            redisClient.keys('__express__/api/v1/hr/employees*').then(keys => {
+                if (keys.length > 0) redisClient.del(keys);
+            }).catch(err => console.error('Cache invalidation error', err));
+        }
+
         res.status(201).json({
             success: true,
             data: employee,
@@ -66,7 +75,20 @@ exports.createEmployee = async (req, res) => {
 // @access  Private
 exports.getEmployees = async (req, res) => {
     try {
-        const employees = await Employee.find().populate('manager', 'name employeeId');
+        let query = {};
+        const permissions = req.user.permissions || [];
+        
+        // If user does not have global view permissions, but has view_team
+        if (!permissions.includes('view_all_data') && !permissions.includes('manage_employees')) {
+            if (permissions.includes('view_team')) {
+                query.manager = req.user.employeeId;
+            } else {
+                // If they don't even have view_team, restrict to self
+                query._id = req.user.employeeId;
+            }
+        }
+
+        const employees = await Employee.find(query).populate('manager', 'name employeeId');
 
         // Strip salary field if user is not HR or Finance
         const userRole = req.user.role;
@@ -117,6 +139,15 @@ exports.updateEmployee = async (req, res) => {
             );
         }
 
+        // Invalidate Cache
+        const { getRedisClient } = require('../../shared/redis');
+        const redisClient = getRedisClient();
+        if (redisClient) {
+            redisClient.keys('__express__/api/v1/hr/employees*').then(keys => {
+                if (keys.length > 0) redisClient.del(keys);
+            }).catch(err => console.error('Cache invalidation error', err));
+        }
+
         res.status(200).json({ success: true, data: employee, message: 'Employee updated successfully' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -141,6 +172,15 @@ exports.archiveEmployee = async (req, res) => {
         // Also deactivate the user account
         await User.findOneAndUpdate({ employeeId: employee.employeeId }, { isActive: false });
 
+        // Invalidate Cache
+        const { getRedisClient } = require('../../shared/redis');
+        const redisClient = getRedisClient();
+        if (redisClient) {
+            redisClient.keys('__express__/api/v1/hr/employees*').then(keys => {
+                if (keys.length > 0) redisClient.del(keys);
+            }).catch(err => console.error('Cache invalidation error', err));
+        }
+
         res.status(200).json({ success: true, data: employee, message: 'Employee archived successfully' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -163,6 +203,15 @@ exports.deleteEmployee = async (req, res) => {
 
         // Hard delete the employee
         await Employee.findByIdAndDelete(req.params.id);
+
+        // Invalidate Cache
+        const { getRedisClient } = require('../../shared/redis');
+        const redisClient = getRedisClient();
+        if (redisClient) {
+            redisClient.keys('__express__/api/v1/hr/employees*').then(keys => {
+                if (keys.length > 0) redisClient.del(keys);
+            }).catch(err => console.error('Cache invalidation error', err));
+        }
 
         res.status(200).json({ success: true, message: 'Employee permanently deleted' });
     } catch (error) {
@@ -196,13 +245,14 @@ exports.updateMyProfile = async (req, res) => {
         if (!employeeId) return res.status(400).json({ success: false, message: 'No linked employee profile' });
 
         // Allowed fields to update
-        const { profilePhoto, bio, skills, education, experience } = req.body;
+        const { profilePhoto, bio, skills, education, experience, name } = req.body;
         const updateFields = {};
         if (profilePhoto !== undefined) updateFields.profilePhoto = profilePhoto;
         if (bio !== undefined) updateFields.bio = bio;
         if (skills !== undefined) updateFields.skills = skills;
         if (education !== undefined) updateFields.education = education;
         if (experience !== undefined) updateFields.experience = experience;
+        if (name !== undefined) updateFields.name = name;
 
         const employee = await Employee.findByIdAndUpdate(
             employeeId,

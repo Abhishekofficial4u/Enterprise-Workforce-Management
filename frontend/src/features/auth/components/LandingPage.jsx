@@ -48,7 +48,7 @@ const LandingPage = () => {
                     <div onClick={toggleTheme} style={{ cursor: 'pointer', fontSize: '20px' }} title="Toggle Theme">
                         {theme === 'dark' ? '☀️' : '🌙'}
                     </div>
-                    <button className="btn-large btn-primary-glow" onClick={() => navigate('/login')} style={{ padding: '8px 20px', fontSize: '14px' }}>
+                    <button className="btn-large btn-primary-glow" onClick={() => navigate('/portal')} style={{ padding: '8px 20px', fontSize: '14px' }}>
                         Sign In
                     </button>
                 </div>
@@ -67,10 +67,10 @@ const LandingPage = () => {
                         From payroll and attendance to project kanban boards and AI insights, Workforce OS gives you everything you need to scale your team efficiently.
                     </p>
                     <div className="hero-actions">
-                        <button className="btn-large btn-primary-glow" onClick={() => navigate('/login')}>
+                        <button className="btn-large btn-primary-glow" onClick={() => navigate('/portal')}>
                             Get Started <ArrowRight size={20} />
                         </button>
-                        <button className="btn-large btn-outline" onClick={() => navigate('/login')}>
+                        <button className="btn-large btn-outline" onClick={() => navigate('/portal')}>
                             View Demo
                         </button>
                     </div>

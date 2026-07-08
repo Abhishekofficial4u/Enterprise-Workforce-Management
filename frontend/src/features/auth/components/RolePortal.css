@@ -1,0 +1,214 @@
+.portal-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Animated Background */
+.portal-bg-abstract {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.portal-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.4;
+    animation: orbFloat 20s infinite alternate;
+}
+
+.orb-1 {
+    width: 600px;
+    height: 600px;
+    background: linear-gradient(to right, #8b5cf6, #3b82f6);
+    top: -200px;
+    left: -200px;
+    animation-delay: 0s;
+}
+
+.orb-2 {
+    width: 500px;
+    height: 500px;
+    background: linear-gradient(to right, #f97316, #ec4899);
+    bottom: -100px;
+    right: -100px;
+    animation-delay: -5s;
+}
+
+.orb-3 {
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(to right, #10b981, #0ea5e9);
+    top: 30%;
+    left: 40%;
+    animation-delay: -10s;
+}
+
+@keyframes orbFloat {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(100px, 100px) scale(1.2); }
+    100% { transform: translate(-50px, 150px) scale(0.9); }
+}
+
+/* Content */
+.portal-content {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    width: 100%;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.portal-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.portal-title {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 16px;
+    background: linear-gradient(to right, #ffffff, #a5b4fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+[data-theme="light"] .portal-title {
+    background: linear-gradient(to right, #1e293b, #4f46e5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.portal-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+}
+
+.portal-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: center;
+    width: 100%;
+}
+
+.portal-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 32px;
+    width: 320px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+[data-theme="light"] .portal-card {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.portal-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--hover-color);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 0;
+}
+
+.portal-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    border-color: var(--hover-color);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.portal-card:hover::before {
+    opacity: 0.05;
+}
+
+.portal-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.portal-card-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    transition: transform 0.3s ease;
+}
+
+.portal-card:hover .portal-card-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.portal-card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+}
+
+.portal-card-desc {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 24px;
+    flex-grow: 1;
+}
+
+.portal-card-arrow {
+    font-weight: 600;
+    font-size: 0.9rem;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+    transform: translateX(0);
+}
+
+.portal-card:hover .portal-card-arrow {
+    opacity: 1;
+    transform: translateX(5px);
+}
+
+.portal-back-btn {
+    margin-top: 60px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.portal-back-btn:hover {
+    color: var(--text-primary);
+}

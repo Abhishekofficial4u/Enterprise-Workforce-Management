@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const reportController = require('./report.controller');
 const { protect, authorize } = require('../../middlewares/auth.middleware');
+const cache = require('../../middlewares/cache.middleware');
 
 router.use(protect);
-router.use(authorize('SUPER_ADMIN')); // Only Super Admins can view analytics
+router.use(authorize('SUPER_ADMIN', 'HR_MANAGER', 'FINANCE', 'MANAGER'));
 
-router.get('/dashboard', reportController.getDashboardStats);
+router.get('/dashboard', cache(300), reportController.getDashboardStats);
 
 module.exports = router;

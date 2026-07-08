@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../../layouts/DashboardLayout';
 import {
-    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
+    PieChart, Pie, Cell, Legend
 } from 'recharts';
 import './Dashboard.css';
 
@@ -40,9 +40,9 @@ const modules = [
 const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         return (
-            <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.07)', padding: '10px 14px', borderRadius: 8 }}>
-                <p style={{ color: '#94a3b8', fontSize: 12, marginBottom: 4 }}>{label}</p>
-                <p style={{ color: '#818cf8', fontSize: 14, fontWeight: 600 }}>Present: {payload[0].value}%</p>
+            <div className="ewm-card" style={{ padding: '10px 14px' }}>
+                <p style={{ color: '#94a3b8', fontSize: 12, marginBottom: 4 }}>{label || payload[0].name}</p>
+                <p style={{ color: '#818cf8', fontSize: 14, fontWeight: 600 }}>{payload[0].name === 'present' ? 'Present: ' : ''}{payload[0].value}{payload[0].name === 'present' ? '%' : ''}</p>
             </div>
         );
     }
@@ -51,7 +51,6 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 const DashboardHome = () => {
     const navigate = useNavigate();
-    const role = localStorage.getItem('userRole') || 'EMPLOYEE';
     const now = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
     const [todayAttendance, setTodayAttendance] = useState(null);
@@ -63,8 +62,19 @@ const DashboardHome = () => {
         totalEmployees: 0,
         presentToday: 0,
         leaveRequests: 0,
-        openTickets: 0
+        openTickets: 0,
+        departmentStats: []
     });
+
+    const userRolesStr = localStorage.getItem('userRoles');
+    const userRoles = userRolesStr ? JSON.parse(userRolesStr) : [];
+    
+    // Determine primary role for display logic
+    let role = localStorage.getItem('userRole') || 'EMPLOYEE';
+    if (userRoles.includes('SUPER_ADMIN')) role = 'SUPER_ADMIN';
+    else if (userRoles.includes('HR_MANAGER')) role = 'HR_MANAGER';
+    else if (userRoles.includes('FINANCE')) role = 'FINANCE';
+    else if (userRoles.includes('MANAGER') || userRoles.includes('TEAM_LEAD')) role = 'MANAGER';
 
     useEffect(() => {
         import('../../employees/api/employeeService').then(({ getMyProfile }) => {
@@ -94,11 +104,24 @@ const DashboardHome = () => {
                         getAllTickets()
                     ]);
 
+                    const employees = empRes.data || [];
+                    const deptCounts = {};
+                    employees.forEach(emp => {
+                        const dept = emp.department || 'Unassigned';
+                        deptCounts[dept] = (deptCounts[dept] || 0) + 1;
+                    });
+                    
+                    const departmentStats = Object.keys(deptCounts).map(dept => ({
+                        name: dept,
+                        value: deptCounts[dept]
+                    }));
+
                     setRealStats({
-                        totalEmployees: empRes.data.length,
+                        totalEmployees: employees.length,
                         presentToday: attRes.data.filter(a => a.clockIn).length,
                         leaveRequests: leaveRes.data.filter(l => l.status === 'Pending').length,
-                        openTickets: tktRes.data.filter(t => t.status === 'Open').length
+                        openTickets: tktRes.data.filter(t => t.status === 'Open').length,
+                        departmentStats
                     });
                 } catch (e) {
                     console.error('Failed to fetch real stats', e);
@@ -154,24 +177,65 @@ const DashboardHome = () => {
     let statCards = [];
     let quickActions = [];
 
-    if (role === 'SUPER_ADMIN' || role === 'HR_MANAGER') {
+    if (role === 'SUPER_ADMIN') {
         const attRate = realStats.totalEmployees > 0 
             ? Math.round((realStats.presentToday / realStats.totalEmployees) * 100) 
             : 0;
             
         statCards = [
-            { label: 'Total Employees', value: realStats.totalEmployees.toString(), icon: '👥', color: 'indigo', change: 'Live from DB', upDown: 'up' },
-            { label: 'Present Today',   value: realStats.presentToday.toString(), icon: '✅', color: 'green',  change: `${attRate}% attendance rate`, upDown: 'up' },
-            { label: 'Leave Requests',  value: realStats.leaveRequests.toString(),  icon: '📋', color: 'amber',  change: 'Pending approval',    upDown: 'down' },
-            { label: 'Open Tickets',    value: realStats.openTickets.toString(),   icon: '🎫', color: 'red',    change: 'Needs attention',           upDown: 'down' },
+            { label: 'Total Workforce', value: realStats.totalEmployees.toString(), icon: '👥', color: 'indigo', change: 'Live from DB', upDown: 'up' },
+            { label: 'System Active Users', value: realStats.presentToday.toString(), icon: '✅', color: 'green',  change: `${attRate}% online rate`, upDown: 'up' },
+            { label: 'Pending Leaves',  value: realStats.leaveRequests.toString(),  icon: '📋', color: 'amber',  change: 'Awaiting approval',    upDown: 'down' },
+            { label: 'Open IT Tickets',    value: realStats.openTickets.toString(),   icon: '🎫', color: 'red',    change: 'Needs attention',           upDown: 'down' },
+            { label: 'Server Status',    value: '99.9%',   icon: '⚡', color: 'emerald',    change: 'All systems operational',           upDown: 'up' },
+            { label: 'Storage Used',    value: '42%',   icon: '💾', color: 'sky',    change: '256GB / 500GB',           upDown: 'up' },
         ];
         quickActions = [
-            { icon: '➕', label: 'Add Employee' },
-            { icon: '📋', label: 'Review Leave', onClick: () => navigate('/dashboard/leave') },
-            { icon: '💰', label: 'Run Payroll', onClick: () => navigate('/dashboard/payroll') },
-            { icon: '🎯', label: 'Post Job', onClick: () => navigate('/dashboard/recruitment') },
-            { icon: '📊', label: 'Reports', onClick: () => navigate('/dashboard/reports') },
-            { icon: '🤖', label: 'AI Chat', onClick: () => navigate('/dashboard/ai-assistant') },
+            { icon: '➕', label: 'New User', onClick: () => navigate('/admin/dashboard/employees') },
+            { icon: '🔐', label: 'Vault', onClick: () => navigate('/admin/dashboard/vault') },
+            { icon: '📋', label: 'Review Leave', onClick: () => navigate('/admin/dashboard/leave') },
+            { icon: '🎫', label: 'Help Desk', onClick: () => navigate('/admin/dashboard/helpdesk') },
+            { icon: '📊', label: 'Sys Reports', onClick: () => navigate('/admin/dashboard/reports') },
+            { icon: '🤖', label: 'AI Settings', onClick: () => navigate('/admin/dashboard/ai-assistant') },
+        ];
+    } else if (role === 'HR_MANAGER') {
+        const attRate = realStats.totalEmployees > 0 ? Math.round((realStats.presentToday / realStats.totalEmployees) * 100) : 0;
+        statCards = [
+            { label: 'Headcount', value: realStats.totalEmployees.toString(), icon: '👥', color: 'indigo', change: 'Total employees', upDown: 'up' },
+            { label: 'Attendance Rate', value: `${attRate}%`, icon: '📈', color: 'green',  change: 'Across all deps', upDown: 'up' },
+            { label: 'Pending Leaves',  value: realStats.leaveRequests.toString(),  icon: '📋', color: 'amber',  change: 'Needs approval',    upDown: 'down' },
+            { label: 'Open Requisitions', value: '4', icon: '🎯', color: 'rose', change: 'Hiring pipeline', upDown: 'up' }
+        ];
+        quickActions = [
+            { icon: '➕', label: 'Add Employee', onClick: () => navigate('/hr/dashboard/employees') },
+            { icon: '📋', label: 'Leaves', onClick: () => navigate('/hr/dashboard/leave') },
+            { icon: '🏆', label: 'Reviews', onClick: () => navigate('/hr/dashboard/performance') },
+            { icon: '🎯', label: 'Post Job', onClick: () => navigate('/hr/dashboard/recruitment') },
+        ];
+    } else if (role === 'FINANCE') {
+        statCards = [
+            { label: 'Est. Payroll (Mo)', value: '$124,500', icon: '💰', color: 'emerald', change: 'This month', upDown: 'up' },
+            { label: 'Pending Expenses', value: '12', icon: '🧾', color: 'amber',  change: 'Awaiting payout', upDown: 'down' },
+            { label: 'Tax Deductions',  value: '$28,400',  icon: '🏛️', color: 'indigo',  change: 'Processed',    upDown: 'up' },
+            { label: 'Discrepancies', value: '0', icon: '✅', color: 'green', change: 'All cleared', upDown: 'up' }
+        ];
+        quickActions = [
+            { icon: '💰', label: 'Run Payroll', onClick: () => navigate('/finance/dashboard/payroll') },
+            { icon: '🧾', label: 'Expenses', onClick: () => navigate('/finance/dashboard/reports') },
+            { icon: '📊', label: 'Fin Reports', onClick: () => navigate('/finance/dashboard/reports') },
+        ];
+    } else if (role === 'MANAGER' || role === 'TEAM_LEAD') {
+        statCards = [
+            { label: 'My Team Size', value: '8', icon: '👥', color: 'indigo', change: 'Direct reports', upDown: 'up' },
+            { label: 'Team Present Today', value: '7', icon: '✅', color: 'green',  change: '1 on leave', upDown: 'up' },
+            { label: 'Pending Approvals',  value: '3',  icon: '📋', color: 'amber',  change: 'Leaves & Timesheets',    upDown: 'down' },
+            { label: 'Active Projects', value: '5', icon: '🚀', color: 'sky', change: 'On track', upDown: 'up' }
+        ];
+        quickActions = [
+            { icon: '👥', label: 'View Team', onClick: () => navigate('/manager/dashboard/employees') },
+            { icon: '📋', label: 'Approve Leaves', onClick: () => navigate('/manager/dashboard/leave') },
+            { icon: '🚀', label: 'Projects', onClick: () => navigate('/manager/dashboard/projects') },
+            { icon: '🏆', label: 'Review Team', onClick: () => navigate('/manager/dashboard/performance') },
         ];
     } else {
         const totalLeave = userProfile?.leaveBalance ? 
@@ -191,14 +255,14 @@ const DashboardHome = () => {
                 onClick: handleClock,
                 disabled: !!todayAttendance?.clockOut || attLoading
             },
-            { icon: '📋', label: 'Apply Leave', onClick: () => navigate('/dashboard/leave') },
-            { icon: '💰', label: 'Payslips', onClick: () => navigate('/dashboard/payroll') },
-            { icon: '🎫', label: 'IT Help', onClick: () => navigate('/dashboard/helpdesk') },
+            { icon: '📋', label: 'Apply Leave', onClick: () => navigate('/employee/dashboard/leave') },
+            { icon: '💰', label: 'Payslips', onClick: () => navigate('/employee/dashboard/payroll') },
+            { icon: '🎫', label: 'IT Help', onClick: () => navigate('/employee/dashboard/helpdesk') },
         ];
     }
 
     return (
-        <DashboardLayout title="Dashboard">
+        <>
             <div className="dashboard-home">
 
                 {/* Welcome Banner */}
@@ -245,7 +309,7 @@ const DashboardHome = () => {
                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                                 <XAxis dataKey="day" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} />
                                 <YAxis tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                                <Tooltip content={<CustomTooltip />} />
+                                <RechartsTooltip content={<CustomTooltip />} />
                                 <Area type="monotone" dataKey="present" stroke="#6366f1" strokeWidth={2.5}
                                     fill="url(#colorPresent)" dot={{ fill: '#6366f1', r: 4 }} activeDot={{ r: 6 }} />
                             </AreaChart>
@@ -267,6 +331,36 @@ const DashboardHome = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Optional Department Analytics for Admin/HR */}
+                {(role === 'SUPER_ADMIN' || role === 'HR_MANAGER') && realStats.departmentStats?.length > 0 && (
+                    <div className="card" style={{ marginBottom: 24 }}>
+                        <div className="card-header">
+                            <span className="card-title">Department Distribution</span>
+                        </div>
+                        <ResponsiveContainer width="100%" height={250}>
+                            <PieChart>
+                                <Pie 
+                                    data={realStats.departmentStats} 
+                                    dataKey="value" 
+                                    nameKey="name" 
+                                    cx="50%" 
+                                    cy="50%" 
+                                    innerRadius={60}
+                                    outerRadius={90}
+                                    paddingAngle={5}
+                                >
+                                    {realStats.departmentStats.map((entry, index) => {
+                                        const colors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#0ea5e9', '#8b5cf6'];
+                                        return <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />;
+                                    })}
+                                </Pie>
+                                <RechartsTooltip content={<CustomTooltip />} />
+                                <Legend verticalAlign="bottom" height={36}/>
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                )}
 
                 {/* Bottom Row: Activity + Modules Status */}
                 <div className="bottom-row">
@@ -310,7 +404,7 @@ const DashboardHome = () => {
                 </div>
 
             </div>
-        </DashboardLayout>
+        </>
     );
 };
 

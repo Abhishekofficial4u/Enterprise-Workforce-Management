@@ -1,5 +1,6 @@
 const Department = require('./department.model');
 const Employee = require('../hr/employee.model');
+const Project = require('../projects/project.model');
 
 // @desc    Create a department
 // @route   POST /api/v1/org/departments
@@ -64,6 +65,67 @@ exports.archiveDepartment = async (req, res) => {
         await department.save();
 
         res.status(200).json({ success: true, message: 'Department archived successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Get organization hierarchy
+// @route   GET /api/v1/org/hierarchy
+// @access  Private
+exports.getHierarchy = async (req, res) => {
+    try {
+        const employees = await Employee.find({ status: 'Active' })
+            .select('_id name email designation department profilePhoto manager employeeId')
+            .lean();
+
+        // Build a map for O(1) lookups
+        const empMap = {};
+        employees.forEach(emp => {
+            emp.children = [];
+            empMap[emp._id.toString()] = emp;
+        });
+
+        const rootNodes = [];
+
+        // Build the tree
+        employees.forEach(emp => {
+            if (emp.manager && empMap[emp.manager.toString()]) {
+                empMap[emp.manager.toString()].children.push(emp);
+            } else {
+                rootNodes.push(emp);
+            }
+        });
+
+        res.status(200).json({ success: true, data: rootNodes });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Global Search (Employees, Projects, Departments)
+// @route   GET /api/v1/org/search?q=query
+// @access  Private
+exports.globalSearch = async (req, res) => {
+    try {
+        const { q } = req.query;
+        if (!q || q.length < 2) {
+            return res.status(200).json({ success: true, data: { employees: [], projects: [], departments: [] } });
+        }
+
+        const regex = new RegExp(q, 'i');
+
+        // Search in parallel
+        const [employees, projects, departments] = await Promise.all([
+            Employee.find({ $or: [{ name: regex }, { email: regex }, { designation: regex }] }).select('name email designation profilePhoto department').limit(5),
+            Project.find({ $or: [{ name: regex }, { description: regex }] }).select('name status').limit(5),
+            Department.find({ departmentName: regex }).select('departmentName departmentCode').limit(5)
+        ]);
+
+        res.status(200).json({ 
+            success: true, 
+            data: { employees, projects, departments } 
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

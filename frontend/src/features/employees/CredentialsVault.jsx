@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import DashboardLayout from '../../layouts/DashboardLayout';
 import '../../components/shared.css';
 
 const CredentialsVault = () => {
@@ -55,7 +54,7 @@ const CredentialsVault = () => {
 
     if (!unlocked) {
         return (
-            <DashboardLayout title="Admin Credentials Vault">
+            <>
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
                     <div style={{ background: 'var(--bg-card)', padding: 40, borderRadius: 12, border: '1px solid var(--border)', maxWidth: 450, width: '100%', textAlign: 'center' }}>
                         <div style={{ fontSize: 40, marginBottom: 20 }}>🔐</div>
@@ -80,12 +79,12 @@ const CredentialsVault = () => {
                         </form>
                     </div>
                 </div>
-            </DashboardLayout>
+            </>
         );
     }
 
     return (
-        <DashboardLayout title="Admin Credentials Vault">
+        <>
             <div className="page-header">
                 <div className="page-header-left">
                     <h1 style={{ color: 'var(--warning)' }}>🔓 Vault Unlocked</h1>
@@ -137,7 +136,7 @@ const CredentialsVault = () => {
                     </tbody>
                 </table>
             </div>
-        </DashboardLayout>
+        </>
     );
 };
 

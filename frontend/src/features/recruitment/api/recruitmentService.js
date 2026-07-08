@@ -39,6 +39,6 @@ export const createCandidate = async (candidateData) => {
 };
 
 export const updateCandidateStage = async (id, stage) => {
-    const response = await axios.patch(`${API_URL}/candidates/${id}/stage`, { stage });
+    const response = await axios.put(`${API_URL}/candidates/${id}/stage`, { stage });
     return response.data;
 };

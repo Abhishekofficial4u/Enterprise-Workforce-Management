@@ -1,5 +1,6 @@
 const Job = require('./job.model');
 const Candidate = require('./candidate.model');
+const aiRecruitment = require('../ai/ai.recruitment');
 
 // --- Jobs API ---
 exports.createJob = async (req, res) => {
@@ -8,7 +9,30 @@ exports.createJob = async (req, res) => {
         await job.save();
         res.status(201).json({ message: 'Job posted successfully', job });
     } catch (error) {
-        res.status(500).json({ message: 'Error posting job', error: error.message });
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Run AI Screening on a candidate
+// @route   POST /api/v1/recruitment/candidates/:id/ai-screen
+// @access  Private (HR, ADMIN)
+exports.aiScreenCandidate = async (req, res) => {
+    try {
+        const candidate = await Candidate.findById(req.params.id);
+        if (!candidate) return res.status(404).json({ success: false, message: 'Candidate not found' });
+
+        const job = await Job.findById(candidate.jobId);
+        if (!job) return res.status(404).json({ success: false, message: 'Associated job not found' });
+
+        const aiAnalysis = await aiRecruitment.screenCandidate(candidate, job);
+        
+        // Optionally save the score to the candidate document
+        candidate.aiMatchScore = aiAnalysis.matchScore;
+        await candidate.save();
+
+        res.status(200).json({ success: true, data: aiAnalysis });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 

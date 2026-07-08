@@ -108,8 +108,21 @@ exports.getAllAttendance = async (req, res) => {
             dateString = new Date().toISOString().split('T')[0];
         }
 
-        // Fetch all employees (to know who is absent)
-        const allEmployees = await Employee.find({ status: { $ne: 'Archived' } }).select('_id employeeId name department designation');
+        let query = { status: { $ne: 'Archived' } };
+        const permissions = req.user.permissions || [];
+        
+        // If user does not have global view permissions, but has view_team
+        if (!permissions.includes('view_all_data') && !permissions.includes('manage_attendance')) {
+            if (permissions.includes('view_team')) {
+                query.manager = req.user.employeeId;
+            } else {
+                // If they don't even have view_team, restrict to self
+                query._id = req.user.employeeId;
+            }
+        }
+
+        // Fetch employees based on RBAC
+        const allEmployees = await Employee.find(query).select('_id employeeId name department designation');
         
         // Fetch attendance records for the date
         const attendanceRecords = await Attendance.find({ date: dateString });

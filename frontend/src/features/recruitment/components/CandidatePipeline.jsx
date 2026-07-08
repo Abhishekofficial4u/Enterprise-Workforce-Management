@@ -11,6 +11,8 @@ const CandidatePipeline = ({ job }) => {
     const [newCandidate, setNewCandidate] = useState({
         firstName: '', lastName: '', email: '', phone: '', resumeUrl: '', jobId: job._id
     });
+    const [aiResult, setAiResult] = useState(null);
+    const [analyzingId, setAnalyzingId] = useState(null);
 
     const fetchCandidates = async () => {
         try {
@@ -37,6 +39,28 @@ const CandidatePipeline = ({ job }) => {
             fetchCandidates();
         } catch (error) {
             alert('Failed to add candidate.');
+        }
+    };
+
+    const handleAIScreen = async (candidateId) => {
+        try {
+            setAnalyzingId(candidateId);
+            const token = localStorage.getItem('userToken');
+            const res = await fetch(`https://enterprise-workforce-management.onrender.com/api/v1/recruitment/candidates/${candidateId}/ai-screen`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const result = await res.json();
+            if (result.success) {
+                setAiResult(result.data);
+            } else {
+                alert(result.message || 'AI Screening failed');
+            }
+        } catch (error) {
+            alert('Error running AI screen');
+        } finally {
+            setAnalyzingId(null);
+            fetchCandidates(); // refresh to show saved score if applicable
         }
     };
 
@@ -75,7 +99,7 @@ const CandidatePipeline = ({ job }) => {
                     <h2>{job.title}</h2>
                     <span className="pipeline-meta">{job.department} • {job.location}</span>
                 </div>
-                <button className="btn-primary" onClick={() => setShowAddModal(true)}>
+                <button className="ewm-btn" onClick={() => setShowAddModal(true)}>
                     + Add Candidate
                 </button>
             </div>
@@ -125,6 +149,21 @@ const CandidatePipeline = ({ job }) => {
                                                     📄 View Resume
                                                 </a>
                                             )}
+                                            
+                                            {candidate.aiMatchScore !== undefined && (
+                                                <div style={{ marginTop: 8, fontSize: 12, fontWeight: 600, color: 'var(--primary)' }}>
+                                                    ✨ AI Match: {candidate.aiMatchScore}%
+                                                </div>
+                                            )}
+
+                                            <button 
+                                                className="ewm-btn-secondary" 
+                                                style={{ marginTop: 12, width: '100%', fontSize: 12, padding: '6px' }}
+                                                onClick={() => handleAIScreen(candidate._id)}
+                                                disabled={analyzingId === candidate._id}
+                                            >
+                                                {analyzingId === candidate._id ? 'Analyzing...' : '✨ AI Screen'}
+                                            </button>
                                         </div>
                                 ))}
                             </div>
@@ -168,6 +207,63 @@ const CandidatePipeline = ({ job }) => {
                                 <button type="submit" className="btn-primary">Add Candidate</button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* AI Result Modal */}
+            {aiResult && (
+                <div className="modal-overlay">
+                    <div className="modal-content" style={{ maxWidth: 500, padding: '32px' }}>
+                        <h2 style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--primary)', marginTop: 0 }}>
+                            ✨ AI Candidate Screening
+                        </h2>
+                        
+                        <div style={{ margin: '24px 0' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+                                <div style={{ 
+                                    fontSize: 48, fontWeight: 800, 
+                                    color: aiResult.matchScore > 75 ? 'var(--success)' : (aiResult.matchScore > 50 ? 'var(--warning)' : 'var(--danger)') 
+                                }}>
+                                    {aiResult.matchScore}%
+                                </div>
+                                <div>
+                                    <h3 style={{ margin: 0, fontSize: 18, color: 'var(--text-primary)' }}>Match Score</h3>
+                                    <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Based on resume and job description</div>
+                                </div>
+                            </div>
+                            
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+                                <div>
+                                    <h4 style={{ color: 'var(--success)', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                        <span style={{ fontSize: 18 }}>💪</span> Top Strengths
+                                    </h4>
+                                    <ul style={{ paddingLeft: 20, margin: 0, color: 'var(--text-secondary)' }}>
+                                        {aiResult.strengths?.map((s, i) => <li key={i} style={{ marginBottom: 6 }}>{s}</li>)}
+                                    </ul>
+                                </div>
+
+                                <div>
+                                    <h4 style={{ color: 'var(--danger)', margin: '0 0 12px 0', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                        <span style={{ fontSize: 18 }}>⚠️</span> Missing Skills
+                                    </h4>
+                                    <ul style={{ paddingLeft: 20, margin: 0, color: 'var(--text-secondary)' }}>
+                                        {aiResult.missingSkills?.map((s, i) => <li key={i} style={{ marginBottom: 6 }}>{s}</li>)}
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+                                <h4 style={{ margin: '0 0 8px 0', color: 'var(--text-secondary)' }}>Recommended Action:</h4>
+                                <div style={{ fontSize: 16, fontWeight: 600, color: aiResult.matchScore >= 70 ? 'var(--success)' : (aiResult.matchScore < 40 ? 'var(--danger)' : 'var(--warning)') }}>
+                                    {aiResult.matchScore >= 70 ? '✅ Fast-track to Interview' : (aiResult.matchScore < 40 ? '❌ Reject Application' : '⚠️ Review Manually')}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 32 }}>
+                            <button className="btn-secondary" onClick={() => setAiResult(null)}>Close Analysis</button>
+                        </div>
                     </div>
                 </div>
             )}

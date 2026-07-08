@@ -2,11 +2,15 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const http = require('http'); // Required for Socket.io
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const connectDB = require('./shared/db');
+const { initRedis } = require('./shared/redis');
 const socketModule = require('./shared/socket'); // Import socket module
 
 // Connect to Database
 connectDB();
+initRedis(); // Initialize Redis Client
 
 const app = express();
 const server = http.createServer(app); // Create HTTP server
@@ -15,7 +19,20 @@ const server = http.createServer(app); // Create HTTP server
 socketModule.init(server);
 
 // Middlewares
+app.use(helmet({ crossOriginResourcePolicy: false })); // allow images/files to be loaded from other origins if needed
 app.use(cors());
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// Global Rate Limiter
+const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 1000, // Limit each IP to 1000 requests per `window` (here, per 15 minutes)
+    message: { success: false, message: 'Too many requests from this IP, please try again after 15 minutes' },
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+app.use(globalLimiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
@@ -37,6 +54,7 @@ const helpdeskRoutes = require('./modules/helpdesk/helpdesk.routes');
 const assetRoutes = require('./modules/assets/asset.routes');
 const reportRoutes = require('./modules/reports/report.routes');
 const aiRoutes = require('./modules/ai/ai.routes');
+const auditRoutes = require('./modules/audit/audit.routes');
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/hr', hrRoutes);
@@ -50,6 +68,7 @@ app.use('/api/v1/helpdesk', helpdeskRoutes);
 app.use('/api/v1/assets', assetRoutes);
 app.use('/api/v1/reports', reportRoutes);
 app.use('/api/v1/ai', aiRoutes);
+app.use('/api/v1/audit', auditRoutes);
 
 // Start Server
 const PORT = process.env.PORT || 5000;

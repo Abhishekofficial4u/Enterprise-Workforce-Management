@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import DashboardLayout from '../../layouts/DashboardLayout';
 import { getAllAttendance, getMyAttendance } from './api/attendanceService';
 import '../../components/shared.css';
 
@@ -61,7 +60,7 @@ const Attendance = () => {
     const avatarColors = ['#6366f1','#0ea5e9','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6'];
 
     return (
-        <DashboardLayout title="Attendance">
+        <>
             <div>
                 <div className="page-header">
                     <div className="page-header-left">
@@ -118,6 +117,20 @@ const Attendance = () => {
                                 </div>
                             </div>
                         ))}
+                    </div>
+                )}
+                
+                {/* Insights / Anomalies Panel (Admin Only) */}
+                {isAdmin && (summary.late > 0 || attendanceList.some(a => a.overtime > 0)) && (
+                    <div style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: 12, padding: '16px 20px', marginBottom: 22, display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+                        <div style={{ fontSize: 24 }}>💡</div>
+                        <div>
+                            <h4 style={{ margin: '0 0 6px 0', color: '#f59e0b', fontSize: 15 }}>Attendance Insights</h4>
+                            <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>
+                                {summary.late > 0 && <span><strong>{summary.late}</strong> employees arrived late today. </span>}
+                                {attendanceList.filter(a => a.overtime > 0).length > 0 && <span><strong>{attendanceList.filter(a => a.overtime > 0).length}</strong> employees logged overtime.</span>}
+                            </p>
+                        </div>
                     </div>
                 )}
 
@@ -203,7 +216,7 @@ const Attendance = () => {
                     )}
                 </div>
             </div>
-        </DashboardLayout>
+        </>
     );
 };
 

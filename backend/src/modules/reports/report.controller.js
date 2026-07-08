@@ -40,6 +40,35 @@ exports.getDashboardStats = async (req, res) => {
             { $project: { name: '$_id', value: '$count', _id: 0 } }
         ]);
 
+        // 4. Burnout Risk (Predictive Analytics)
+        // Simulate burnout risk by finding employees with the highest accumulated leave balances (meaning they aren't taking time off)
+        const highRiskEmployees = await Employee.aggregate([
+            { $match: { status: 'Active' } },
+            { 
+                $project: { 
+                    name: 1, 
+                    department: 1, 
+                    designation: 1,
+                    totalLeaveBalance: { 
+                        $add: [ 
+                            { $ifNull: ['$leaveBalance.casual', 0] }, 
+                            { $ifNull: ['$leaveBalance.sick', 0] }, 
+                            { $ifNull: ['$leaveBalance.earned', 0] } 
+                        ] 
+                    } 
+                } 
+            },
+            { $sort: { totalLeaveBalance: -1 } },
+            { $limit: 5 }
+        ]);
+
+        const burnoutRisk = highRiskEmployees.map(emp => ({
+            name: emp.name,
+            department: emp.department,
+            role: emp.designation,
+            riskScore: Math.min(Math.round((emp.totalLeaveBalance / 30) * 100), 98) // Normalize to a percentage up to 98%
+        }));
+
         res.status(200).json({
             success: true,
             data: {
@@ -55,6 +84,9 @@ exports.getDashboardStats = async (req, res) => {
                     assetStatusDist,
                     assetCategoryDist,
                     ticketStatusDist
+                },
+                predictive: {
+                    burnoutRisk
                 }
             }
         });

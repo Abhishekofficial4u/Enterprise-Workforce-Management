@@ -7,8 +7,9 @@
 }
 
 :root {
-  --primary: #4f46e5;
-  --primary-dark: #4338ca;
+  /* Modern Enterprise Dark Mode Palette */
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
   --primary-light: #818cf8;
   --secondary: #0ea5e9;
   --accent: #f59e0b;
@@ -16,48 +17,50 @@
   --danger: #ef4444;
   --warning: #f59e0b;
 
-  --bg-dark: #0f172a;
-  --bg-card: #1e293b;
-  --bg-card-hover: #2d3748;
+  --bg-dark: #09090b; /* Deep almost black */
+  --bg-card: #18181b; /* Sleek dark gray */
+  --bg-card-hover: #27272a;
   
-  --bg-sidebar: #e2e8f0;
-  --sidebar-text: #0f172a;
-  --sidebar-text-muted: #475569;
-  --sidebar-active-bg: #4f46e5;
-  --sidebar-active-text: #ffffff;
-  --sidebar-border: #cbd5e1;
+  --bg-sidebar: #09090b;
+  --sidebar-text: #a1a1aa;
+  --sidebar-text-muted: #52525b;
+  --sidebar-active-bg: #18181b;
+  --sidebar-active-text: #fafafa;
+  --sidebar-border: #27272a;
 
-  --border: #334155;
+  --border: #27272a;
 
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
 
   --radius: 12px;
   --radius-sm: 8px;
-  --shadow: 0 4px 24px rgba(0,0,0,0.35);
-  --shadow-card: 0 2px 12px rgba(0,0,0,0.25);
+  --shadow: 0 10px 30px rgba(0,0,0,0.5);
+  --shadow-card: 0 4px 12px rgba(0,0,0,0.3);
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 [data-theme='light'] {
+  /* Modern Enterprise Light Mode Palette */
   --primary: #4f46e5;
   --primary-dark: #4338ca;
   --primary-light: #818cf8;
-  --secondary: #dbeafe;
+  --secondary: #0ea5e9;
   --accent: #7c3aed;
-  --success: #22c55e;
+  --success: #10b981;
   --danger: #ef4444;
   --warning: #f59e0b;
 
   --bg-dark: #f8fafc;
-  --bg-card: #cfe2ff;
-  --bg-card-hover: #aecbf7;
+  --bg-card: #ffffff; /* Clean white */
+  --bg-card-hover: #f1f5f9;
   
   --bg-sidebar: #ffffff;
-  --sidebar-text: #0f172a;
-  --sidebar-text-muted: #475569;
-  --sidebar-active-bg: #ede9fe;
-  --sidebar-active-text: #4f46e5;
+  --sidebar-text: #334155;
+  --sidebar-text-muted: #64748b;
+  --sidebar-active-bg: #f1f5f9;
+  --sidebar-active-text: #0f172a;
   --sidebar-border: #e2e8f0;
 
   --border: #e2e8f0;
@@ -66,8 +69,8 @@
   --text-secondary: #475569;
   --text-muted: #94a3b8;
 
-  --shadow: 0 4px 24px rgba(0,0,0,0.05);
-  --shadow-card: 0 2px 12px rgba(0,0,0,0.05);
+  --shadow: 0 10px 30px rgba(0,0,0,0.05);
+  --shadow-card: 0 4px 12px rgba(0,0,0,0.03);
 }
 
 html, body, #root {
@@ -79,6 +82,70 @@ html, body, #root {
   -webkit-font-smoothing: antialiased;
 }
 
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-dark); }
-::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 10px; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* Premium Utility Classes */
+.ewm-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  transition: var(--transition);
+}
+
+.ewm-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  border-color: var(--primary-light);
+}
+
+.ewm-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: var(--transition);
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+}
+
+.ewm-btn:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+}
+
+.ewm-btn-secondary {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+.ewm-btn-secondary:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--text-muted);
+  transform: translateY(-1px);
+}
+
+/* Glassmorphism utility */
+.glass-panel {
+  background: rgba(24, 24, 27, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+[data-theme='light'] .glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}

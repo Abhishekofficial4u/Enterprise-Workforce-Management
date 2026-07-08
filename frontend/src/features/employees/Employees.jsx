@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import DashboardLayout from '../../layouts/DashboardLayout';
 import AddEmployeeModal from './components/AddEmployeeModal';
 import EditEmployeeModal from './components/EditEmployeeModal';
 import ViewEmployeeModal from './components/ViewEmployeeModal';
@@ -37,11 +36,20 @@ const Employees = () => {
         fetchEmployees();
     }, []);
 
+    const [activeStatus, setActiveStatus] = useState('All');
+
     const filtered = employees.filter(e => {
-        const matchSearch = e.name?.toLowerCase().includes(search.toLowerCase()) ||
-                            e.employeeId?.toLowerCase().includes(search.toLowerCase());
+        const searchLower = search.toLowerCase();
+        
+        // Search matches name, ID, or skills array
+        const matchSearch = e.name?.toLowerCase().includes(searchLower) ||
+                            e.employeeId?.toLowerCase().includes(searchLower) ||
+                            (e.skills && e.skills.some(skill => skill.name?.toLowerCase().includes(searchLower)));
+                            
         const matchDept = activeDept === 'All' || e.department === activeDept;
-        return matchSearch && matchDept;
+        const matchStatus = activeStatus === 'All' || e.status === activeStatus;
+        
+        return matchSearch && matchDept && matchStatus;
     });
 
     const getInitials = name => name ? name.split(' ').map(w => w[0]).join('') : '?';
@@ -109,7 +117,7 @@ const Employees = () => {
     ];
 
     return (
-        <DashboardLayout title="Employees">
+        <>
             <div>
                 {/* Header */}
                 <div className="page-header">
@@ -140,25 +148,40 @@ const Employees = () => {
                 </div>
 
                 {/* Search & Dept Filter */}
-                <div className="search-filter-bar" style={{ flexWrap: 'wrap' }}>
-                    <div className="search-input-wrap">
+                <div className="search-filter-bar" style={{ flexWrap: 'wrap', gap: 15, padding: '15px 20px', background: 'var(--bg-card)', borderRadius: 12, border: '1px solid var(--border)' }}>
+                    <div className="search-input-wrap" style={{ flex: '1 1 300px' }}>
                         <span className="search-icon">🔍</span>
                         <input
                             className="search-input"
-                            placeholder="Search by name or ID..."
+                            placeholder="Search by name, ID, or skills..."
                             value={search}
                             onChange={e => setSearch(e.target.value)}
+                            style={{ width: '100%' }}
                         />
                     </div>
-                    {depts.map(d => (
-                        <button
-                            key={d}
-                            className={`filter-chip ${activeDept === d ? 'active' : ''}`}
-                            onClick={() => setActiveDept(d)}
+                    
+                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                        <select 
+                            className="ewm-select"
+                            value={activeDept}
+                            onChange={(e) => setActiveDept(e.target.value)}
+                            style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text-primary)' }}
                         >
-                            {d}
-                        </button>
-                    ))}
+                            {depts.map(d => <option key={d} value={d}>{d === 'All' ? 'All Departments' : d}</option>)}
+                        </select>
+                        
+                        <select 
+                            className="ewm-select"
+                            value={activeStatus}
+                            onChange={(e) => setActiveStatus(e.target.value)}
+                            style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text-primary)' }}
+                        >
+                            <option value="All">All Statuses</option>
+                            <option value="Active">Active</option>
+                            <option value="Probation">Probation</option>
+                            <option value="Archived">Archived</option>
+                        </select>
+                    </div>
                 </div>
 
                 {/* Error & Loading States */}
@@ -266,7 +289,7 @@ const Employees = () => {
                     }}
                 />
             )}
-        </DashboardLayout>
+        </>
     );
 };
 
