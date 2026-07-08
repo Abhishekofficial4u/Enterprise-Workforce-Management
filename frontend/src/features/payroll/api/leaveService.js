@@ -32,6 +32,6 @@ export const getAllLeaves = async () => {
 };
 
 export const updateLeaveStatus = async (id, status) => {
-    const response = await axios.put(`${API_URL}/${id}`, { status }, getAuthHeader());
+    const response = await axios.patch(`${API_URL}/${id}/status`, { status }, getAuthHeader());
     return response.data;
 };

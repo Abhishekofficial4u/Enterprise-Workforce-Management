@@ -7,6 +7,7 @@
 }
 
 :root {
+  color-scheme: dark;
   /* Modern Enterprise Dark Mode Palette */
   --primary: #6366f1;
   --primary-dark: #4f46e5;
@@ -42,6 +43,7 @@
 }
 
 [data-theme='light'] {
+  color-scheme: light;
   /* Modern Enterprise Light Mode Palette */
   --primary: #4f46e5;
   --primary-dark: #4338ca;
