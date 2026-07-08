@@ -58,7 +58,13 @@ const PermissionRoute = ({ children, requiredPermissions }) => {
     const hasPermission = requiredPermissions.length === 0 || requiredPermissions.every(p => permissions.includes(p));
     
     if (!hasPermission) {
-        const roleBase = role === 'SUPER_ADMIN' ? 'admin' : (role ? role.toLowerCase() : '');
+        let roleBase = '';
+        if (role === 'SUPER_ADMIN' || role === 'ORG_ADMIN' || role === 'IT_ADMIN') roleBase = 'admin';
+        else if (role === 'HR_MANAGER') roleBase = 'hr';
+        else if (role === 'FINANCE') roleBase = 'finance';
+        else if (role === 'MANAGER' || role === 'TEAM_LEAD') roleBase = 'manager';
+        else roleBase = 'employee';
+        
         return <Navigate to={roleBase ? `/${roleBase}/dashboard` : '/dashboard'} replace />;
     }
     
@@ -108,7 +114,7 @@ function App() {
                 <Route path="/hr/dashboard" element={<PermWrap perms={['manage_employees']}><HRLayout><DashboardHome /></HRLayout></PermWrap>} />
                 <Route path="/hr/dashboard/employees" element={<PermWrap perms={['manage_employees']}><HRLayout><Employees /></HRLayout></PermWrap>} />
                 <Route path="/hr/dashboard/recruitment" element={<PermWrap perms={['manage_recruitment']}><HRLayout><RecruitmentHome /></HRLayout></PermWrap>} />
-                <Route path="/hr/dashboard/performance" element={<PermWrap perms={['view_performance']}><HRLayout><PerformanceHome /></HRLayout></PermWrap>} />
+                <Route path="/hr/dashboard/performance" element={<PermWrap perms={[]}><HRLayout><PerformanceHome /></HRLayout></PermWrap>} />
                 <Route path="/hr/dashboard/attendance" element={<PermWrap perms={['approve_leave']}><HRLayout><Attendance /></HRLayout></PermWrap>} />
                 <Route path="/hr/dashboard/leave" element={<PermWrap perms={['approve_leave']}><HRLayout><Leave /></HRLayout></PermWrap>} />
                 <Route path="/hr/dashboard/shifts" element={<PermWrap perms={['approve_leave']}><HRLayout><ShiftManagement /></HRLayout></PermWrap>} />
