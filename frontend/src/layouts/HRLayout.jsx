@@ -6,9 +6,10 @@ import {
     LayoutDashboard, Users, Target, Award, 
     CalendarCheck, Palmtree, LineChart, 
     Bell, Settings, LogOut, ArrowLeftRight, Briefcase, FileText,
-    Megaphone, GraduationCap
+    Megaphone, GraduationCap, Bot
 } from 'lucide-react';
 import GlobalSearch from '../components/GlobalSearch';
+import NotificationsBadge from '../features/notifications/components/NotificationsBadge';
 import './HRLayout.css';
 
 const hrNavItems = [
@@ -29,6 +30,7 @@ const hrNavItems = [
     ]},
     { section: 'Analytics', items: [
         { label: 'HR Reports', icon: LineChart, path: '/hr/dashboard/reports' },
+        { label: 'AI Assistant', icon: Bot, path: '/hr/dashboard/ai-assistant' },
     ]}
 ];
 
@@ -129,10 +131,7 @@ const HRLayout = ({ children, title = 'Human Resources' }) => {
                         <button className="switch-portal-btn hr-btn" onClick={() => navigate('/portal')} title="Switch Portal">
                             <ArrowLeftRight size={16} /> Switch Portal
                         </button>
-                        <div className="hr-topbar-badge" onClick={() => setShowNotifications(!showNotifications)}>
-                            <Bell size={18} />
-                            {unreadCount > 0 && <span className="hr-badge-dot">{unreadCount}</span>}
-                        </div>
+                        <NotificationsBadge />
                         <div className="hr-user-avatar" onClick={() => navigate('/hr/dashboard/profile')}>
                             {avatarContent}
                         </div>

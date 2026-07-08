@@ -10,6 +10,7 @@ const Leave = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [balances, setBalances] = useState({ casual: 0, sick: 0, earned: 0 });
+    const [myLeaves, setMyLeaves] = useState([]);
 
     const [aiResult, setAiResult] = useState(null);
     const [analyzingId, setAnalyzingId] = useState(null);
@@ -28,14 +29,19 @@ const Leave = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
+            // Everyone fetches their own balance and leaves
+            const myRes = await getMyLeaves();
+            setMyLeaves(myRes.data);
+            
+            const balanceRes = await getMyLeaveBalance();
+            setBalances(balanceRes.data);
+
+            // Admins also fetch all leaves
             if (isAdmin) {
                 const res = await getAllLeaves();
                 setLeaves(res.data);
             } else {
-                const res = await getMyLeaves();
-                setLeaves(res.data);
-                const balanceRes = await getMyLeaveBalance();
-                setBalances(balanceRes.data);
+                setLeaves(myRes.data);
             }
         } catch (err) {
             setError('Failed to load leave data.');
@@ -83,6 +89,32 @@ const Leave = () => {
         }
     };
 
+    const handleAIPredictForm = async () => {
+        if (!startDate || !endDate) return alert('Please select Start Date and End Date first');
+        try {
+            setAnalyzingId('form');
+            const token = localStorage.getItem('userToken');
+            const res = await fetch(`https://enterprise-workforce-management.onrender.com/api/v1/time-payroll/leave/ai-prediction`, {
+                method: 'POST',
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ leaveType, startDate, endDate, reason })
+            });
+            const result = await res.json();
+            if (result.success) {
+                setAiResult(result.data);
+            } else {
+                alert(result.message || 'AI Prediction failed');
+            }
+        } catch (error) {
+            alert('Error running AI prediction');
+        } finally {
+            setAnalyzingId(null);
+        }
+    };
+
     const handleStatusUpdate = async (id, newStatus) => {
         try {
             await updateLeaveStatus(id, newStatus);
@@ -104,8 +136,7 @@ const Leave = () => {
 
                 {error && <div className="alert-error" style={{marginBottom: 20}}>⚠️ {error}</div>}
 
-                {/* Leave Balances Section */}
-                {!isAdmin && (
+                {/* Leave Balances Section (For Everyone) */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
                         <div className="card" style={{ padding: '24px', textAlign: 'center', background: 'rgba(255, 255, 255, 0.05)' }}>
                             <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Casual Leave</div>
@@ -120,10 +151,8 @@ const Leave = () => {
                             <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-primary)', marginTop: '8px' }}>{balances.earned}</div>
                         </div>
                     </div>
-                )}
 
-                {/* Employee Request Form */}
-                {!isAdmin && (
+                {/* Employee Request Form (For Everyone) */}
                     <div className="card" style={{ marginBottom: '24px' }}>
                         <div className="card-header">
                             <span className="card-title">Apply for Leave</span>
@@ -139,24 +168,28 @@ const Leave = () => {
                                     <option>Work From Home</option>
                                 </select>
                             </div>
-                            <div className="form-field" style={{ marginBottom: 0 }}>
+                            <div className="form-field" style={{ marginBottom: 16 }}>
                                 <label>Start Date</label>
-                                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
+                                <input type="date" value={startDate} min={new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0]} onChange={(e) => setStartDate(e.target.value)} required />
                             </div>
-                            <div className="form-field" style={{ marginBottom: 0 }}>
+                            <div className="form-field" style={{ marginBottom: 16 }}>
                                 <label>End Date</label>
-                                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
+                                <input type="date" value={endDate} min={startDate || new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0]} onChange={(e) => setEndDate(e.target.value)} required />
                             </div>
                             <div className="form-field" style={{ gridColumn: 'span 3', marginBottom: 0 }}>
                                 <label>Reason</label>
                                 <input type="text" value={reason} onChange={(e) => setReason(e.target.value)} required placeholder="Reason for leave..." />
                             </div>
-                            <button type="submit" className="btn-primary" disabled={applying} style={{ gridColumn: 'span 3', justifySelf: 'start', padding: '10px 24px' }}>
-                                {applying ? 'Submitting...' : 'Submit Request'}
-                            </button>
+                            <div style={{ gridColumn: 'span 3', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                <button type="submit" className="btn-primary" disabled={applying} style={{ padding: '10px 24px' }}>
+                                    {applying ? 'Submitting...' : 'Submit Request'}
+                                </button>
+                                <button type="button" className="btn-secondary" onClick={handleAIPredictForm} disabled={analyzingId === 'form'} style={{ padding: '10px 24px', background: 'rgba(99,102,241,0.1)', color: 'var(--primary-light)', border: '1px solid var(--primary)' }}>
+                                    {analyzingId === 'form' ? 'Analyzing...' : '✨ Predict Approval Chances'}
+                                </button>
+                            </div>
                         </form>
                     </div>
-                )}
 
                 {/* Leaves Table */}
                 <div className="card">

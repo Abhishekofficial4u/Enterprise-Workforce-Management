@@ -24,6 +24,7 @@ router.get('/leave/my', leaveController.getMyLeaves);
 router.get('/leave/all', authorize('MANAGER', 'HR_MANAGER', 'SUPER_ADMIN'), leaveController.getAllLeaves);
 router.patch('/leave/:id/status', authorize('MANAGER', 'HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), leaveController.updateLeaveStatus);
 router.get('/leave/:id/ai-prediction', authorize('EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), leaveController.predictLeave);
+router.post('/leave/ai-prediction', authorize('EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), leaveController.predictNewLeave);
 
 // ---- PAYROLL ROUTES ----
 router.post('/payroll/generate', authorize('FINANCE', 'SUPER_ADMIN', 'HR_MANAGER'), payrollController.generatePayroll);

@@ -9,6 +9,7 @@ import {
     Bot, LineChart, Bell, Settings, LogOut, Key, ArrowLeftRight, Network, CalendarDays, ShieldCheck
 } from 'lucide-react';
 import GlobalSearch from '../components/GlobalSearch';
+import NotificationsBadge from '../features/notifications/components/NotificationsBadge';
 import './AdminLayout.css';
 
 import { usePermissions } from '../hooks/usePermissions';
@@ -150,10 +151,7 @@ const AdminLayout = ({ children, title = 'System Admin' }) => {
                         <button className="switch-portal-btn" onClick={() => navigate('/portal')} title="Switch Portal">
                             <ArrowLeftRight size={16} /> Switch Portal
                         </button>
-                        <div className="admin-topbar-badge" title="Notifications" onClick={() => setShowNotifications(!showNotifications)}>
-                            <Bell size={18} />
-                            {unreadCount > 0 && <span className="admin-badge-dot">{unreadCount}</span>}
-                        </div>
+                        <NotificationsBadge />
                         <div className="admin-topbar-badge" onClick={toggleTheme} title="Toggle Theme">
                             {theme === 'dark' ? '☀️' : '🌙'}
                         </div>

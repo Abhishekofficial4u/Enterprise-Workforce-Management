@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getEmployees } from '../../employees/api/employeeService';
 import { submitFeedback } from '../api/performanceService';
 import { MessageSquare, ShieldCheck } from 'lucide-react';
-import '../../components/shared.css';
+import '../../../components/shared.css';
 
 const PeerFeedback = () => {
     const [employees, setEmployees] = useState([]);

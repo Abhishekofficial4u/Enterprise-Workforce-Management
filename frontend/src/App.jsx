@@ -128,6 +128,7 @@ function App() {
                 <Route path="/hr/dashboard/reports" element={<PermWrap perms={['view_reports']}><HRLayout><Reports /></HRLayout></PermWrap>} />
                 <Route path="/hr/dashboard/payroll" element={<PermWrap perms={['manage_payroll']}><HRLayout><Payroll /></HRLayout></PermWrap>} />
                 <Route path="/hr/dashboard/profile" element={<PermWrap perms={[]}><HRLayout><Profile /></HRLayout></PermWrap>} />
+                <Route path="/hr/dashboard/ai-assistant" element={<PermWrap perms={[]}><HRLayout><AiAssistant /></HRLayout></PermWrap>} />
 
                 {/* ======================= */}
                 {/* 3. FINANCE PORTAL       */}
@@ -137,6 +138,7 @@ function App() {
                 <Route path="/finance/dashboard/employees" element={<PermWrap perms={['manage_payroll']}><FinanceLayout><Employees /></FinanceLayout></PermWrap>} />
                 <Route path="/finance/dashboard/reports" element={<PermWrap perms={['view_reports']}><FinanceLayout><Reports /></FinanceLayout></PermWrap>} />
                 <Route path="/finance/dashboard/profile" element={<PermWrap perms={[]}><FinanceLayout><Profile /></FinanceLayout></PermWrap>} />
+                <Route path="/finance/dashboard/ai-assistant" element={<PermWrap perms={[]}><FinanceLayout><AiAssistant /></FinanceLayout></PermWrap>} />
 
                 {/* ======================= */}
                 {/* 4. MANAGER PORTAL       */}
@@ -149,13 +151,17 @@ function App() {
                 <Route path="/manager/dashboard/leave" element={<PermWrap perms={['approve_leave']}><ManagerLayout><Leave /></ManagerLayout></PermWrap>} />
                 <Route path="/manager/dashboard/shifts" element={<PermWrap perms={['approve_leave']}><ManagerLayout><ShiftManagement /></ManagerLayout></PermWrap>} />
                 <Route path="/manager/dashboard/performance" element={<PermWrap perms={['view_performance']}><ManagerLayout><PerformanceHome /></ManagerLayout></PermWrap>} />
+                <Route path="/manager/dashboard/reports" element={<PermWrap perms={['view_reports']}><ManagerLayout><Reports /></ManagerLayout></PermWrap>} />
                 <Route path="/manager/dashboard/profile" element={<PermWrap perms={[]}><ManagerLayout><Profile /></ManagerLayout></PermWrap>} />
+                <Route path="/manager/dashboard/ai-assistant" element={<PermWrap perms={[]}><ManagerLayout><AiAssistant /></ManagerLayout></PermWrap>} />
 
                 {/* ======================= */}
                 {/* 5. EMPLOYEE PORTAL      */}
                 {/* ======================= */}
                 <Route path="/employee/dashboard" element={<PermWrap perms={[]}><EmployeeLayout><DashboardHome /></EmployeeLayout></PermWrap>} />
+                <Route path="/employee/dashboard/performance" element={<PermWrap perms={[]}><EmployeeLayout><PerformanceHome /></EmployeeLayout></PermWrap>} />
                 <Route path="/employee/dashboard/profile" element={<PermWrap perms={[]}><EmployeeLayout><Profile /></EmployeeLayout></PermWrap>} />
+                <Route path="/employee/dashboard/ai-assistant" element={<PermWrap perms={[]}><EmployeeLayout><AiAssistant /></EmployeeLayout></PermWrap>} />
                 <Route path="/employee/dashboard/credentials" element={<PermWrap perms={[]}><EmployeeLayout><CredentialsVault /></EmployeeLayout></PermWrap>} />
                 <Route path="/employee/dashboard/attendance" element={<PermWrap perms={[]}><EmployeeLayout><Attendance /></EmployeeLayout></PermWrap>} />
                 <Route path="/employee/dashboard/leave" element={<PermWrap perms={[]}><EmployeeLayout><Leave /></EmployeeLayout></PermWrap>} />

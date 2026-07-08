@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getDashboardStats } from './api/reportService';
+import { getDashboardStats, getAiSummary } from './api/reportService';
 import { 
     PieChart, Pie, Cell, Tooltip, Legend,
     BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer 
@@ -12,6 +12,25 @@ const Reports = () => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [aiSummary, setAiSummary] = useState('');
+    const [generatingAI, setGeneratingAI] = useState(false);
+
+    const handleGenerateSummary = async () => {
+        if (!data) return;
+        setGeneratingAI(true);
+        try {
+            const res = await getAiSummary(data);
+            if (res.success) {
+                setAiSummary(res.summary);
+            } else {
+                setAiSummary('Failed to generate summary.');
+            }
+        } catch (error) {
+            setAiSummary('Error connecting to AI service.');
+        } finally {
+            setGeneratingAI(false);
+        }
+    };
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -91,11 +110,32 @@ const Reports = () => {
                         <p>High-level insights across all organizational modules</p>
                     </div>
                     <div>
-                        <button className="btn-secondary" onClick={exportToCSV}>
+                        <button className="btn-secondary" onClick={exportToCSV} style={{ marginRight: 10 }}>
                             📥 Export CSV Data
+                        </button>
+                        <button 
+                            className="btn-primary" 
+                            onClick={handleGenerateSummary} 
+                            disabled={generatingAI}
+                            style={{ background: 'linear-gradient(45deg, #8b5cf6, #ec4899)', border: 'none' }}
+                        >
+                            {generatingAI ? '✨ Analyzing Data...' : '✨ Generate AI Executive Summary'}
                         </button>
                     </div>
                 </div>
+
+                {/* AI Summary Section */}
+                {aiSummary && (
+                    <div style={{ marginBottom: 30, background: 'var(--bg-card)', padding: 24, borderRadius: 12, border: '1px solid var(--primary)', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', top: 0, left: 0, width: 4, height: '100%', background: 'linear-gradient(to bottom, #8b5cf6, #ec4899)' }}></div>
+                        <h3 style={{ margin: '0 0 16px 0', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                            ✨ AI Executive Summary
+                        </h3>
+                        <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                            {aiSummary}
+                        </p>
+                    </div>
+                )}
 
                 {/* KPI Cards */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 15, marginBottom: 30 }}>

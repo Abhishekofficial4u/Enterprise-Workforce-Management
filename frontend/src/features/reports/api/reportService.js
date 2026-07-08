@@ -15,3 +15,8 @@ export const getDashboardStats = async () => {
     const response = await axios.get(`${API_URL}/dashboard`, getAuthHeader());
     return response.data;
 };
+
+export const getAiSummary = async (dashboardData) => {
+    const response = await axios.post(`${API_URL}/ai-summary`, { dashboardData }, getAuthHeader());
+    return response.data;
+};

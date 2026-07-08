@@ -5,9 +5,10 @@ import { getMyNotifications, markAsRead, markAllAsRead } from '../features/notif
 import { 
     LayoutDashboard, CalendarCheck, Palmtree, 
     CircleDollarSign, User, Ticket, Bell,    LogOut, ArrowLeftRight, CreditCard, Banknote, Users, Briefcase, FileText,
-    GraduationCap
+    GraduationCap, Bot
 } from 'lucide-react';
 import GlobalSearch from '../components/GlobalSearch';
+import NotificationsBadge from '../features/notifications/components/NotificationsBadge';
 import './EmployeeLayout.css';
 
 const employeeNavItems = [
@@ -24,6 +25,7 @@ const employeeNavItems = [
     ]},
     { section: 'Support', items: [
         { label: 'IT Help Desk', icon: Ticket, path: '/employee/dashboard/helpdesk' },
+        { label: 'AI Assistant', icon: Bot, path: '/employee/dashboard/ai-assistant' },
     ]}
 ];
 
@@ -116,10 +118,7 @@ const EmployeeLayout = ({ children, title = 'Employee Self Service' }) => {
                         <button className="switch-portal-btn employee-btn" onClick={() => navigate('/portal')} title="Switch Portal">
                             <ArrowLeftRight size={16} /> Switch Portal
                         </button>
-                        <div className="employee-topbar-badge" onClick={() => setShowNotifications(!showNotifications)}>
-                            <Bell size={18} />
-                            {unreadCount > 0 && <span className="employee-badge-dot">{unreadCount}</span>}
-                        </div>
+                        <NotificationsBadge />
                         <div className="employee-user-avatar" onClick={() => navigate('/employee/dashboard/profile')}>
                             {avatarContent}
                         </div>

@@ -1,6 +1,7 @@
 const Employee = require('../hr/employee.model');
 const Asset = require('../assets/asset.model');
 const Ticket = require('../helpdesk/ticket.model');
+const aiReports = require('../ai/ai.reports');
 
 // @desc    Get dashboard analytics
 // @route   GET /api/v1/reports/dashboard
@@ -91,6 +92,21 @@ exports.getDashboardStats = async (req, res) => {
             }
         });
 
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Get AI Executive Summary
+// @route   POST /api/v1/reports/ai-summary
+// @access  Private (SUPER_ADMIN)
+exports.getAiSummary = async (req, res) => {
+    try {
+        const { dashboardData } = req.body;
+        if (!dashboardData) return res.status(400).json({ success: false, message: "Dashboard data required" });
+
+        const summary = await aiReports.generateExecutiveSummary(dashboardData);
+        res.status(200).json({ success: true, summary });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

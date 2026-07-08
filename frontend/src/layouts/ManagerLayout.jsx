@@ -4,9 +4,10 @@ import { getMyProfile } from '../features/employees/api/employeeService';
 import { getMyNotifications, markAsRead, markAllAsRead } from '../features/notifications/api/notificationService';
 import { 
     LayoutDashboard, Users, Target, Rocket, 
-    CalendarCheck, Bell, LogOut, ArrowLeftRight, Briefcase, Network, CalendarDays
+    CalendarCheck, Bell, LogOut, ArrowLeftRight, Briefcase, Network, CalendarDays, Bot
 } from 'lucide-react';
 import GlobalSearch from '../components/GlobalSearch';
+import NotificationsBadge from '../features/notifications/components/NotificationsBadge';
 import './ManagerLayout.css';
 
 const managerNavItems = [
@@ -21,6 +22,7 @@ const managerNavItems = [
         { label: 'Leave Approvals', icon: CalendarCheck, path: '/manager/dashboard/leave' },
         { label: 'Shift Scheduling', icon: CalendarDays, path: '/manager/dashboard/shifts' },
         { label: 'Performance', icon: Target, path: '/manager/dashboard/performance' },
+        { label: 'AI Assistant', icon: Bot, path: '/manager/dashboard/ai-assistant' },
     ]}
 ];
 
@@ -113,10 +115,7 @@ const ManagerLayout = ({ children, title = 'Manager Portal' }) => {
                         <button className="switch-portal-btn manager-btn" onClick={() => navigate('/portal')} title="Switch Portal">
                             <ArrowLeftRight size={16} /> Switch Portal
                         </button>
-                        <div className="manager-topbar-badge" onClick={() => setShowNotifications(!showNotifications)}>
-                            <Bell size={18} />
-                            {unreadCount > 0 && <span className="manager-badge-dot">{unreadCount}</span>}
-                        </div>
+                        <NotificationsBadge />
                         <div className="manager-user-avatar" onClick={() => navigate('/manager/dashboard/profile')}>
                             {avatarContent}
                         </div>

@@ -47,3 +47,23 @@ exports.markAllAsRead = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+// Helper function to create and emit notification from other controllers
+exports.createNotification = async (recipientId, title, message, type = 'System') => {
+    try {
+        const notification = await Notification.create({
+            recipientId,
+            title,
+            message,
+            type
+        });
+
+        // Emit socket event if user is connected
+        const socketModule = require('../../shared/socket');
+        socketModule.sendNotificationToUser(recipientId, notification);
+        
+        return notification;
+    } catch (error) {
+        console.error('Error creating notification:', error);
+    }
+};

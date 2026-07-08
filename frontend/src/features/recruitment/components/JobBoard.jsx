@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getJobs, createCandidate } from '../api/recruitmentService';
 import { Briefcase, MapPin, Building, Send } from 'lucide-react';
-import '../../components/shared.css';
+import '../../../components/shared.css';
 
 const JobBoard = () => {
     const [jobs, setJobs] = useState([]);

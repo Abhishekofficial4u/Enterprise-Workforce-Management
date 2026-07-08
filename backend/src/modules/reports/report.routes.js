@@ -8,5 +8,6 @@ router.use(protect);
 router.use(authorize('SUPER_ADMIN', 'HR_MANAGER', 'FINANCE', 'MANAGER'));
 
 router.get('/dashboard', cache(300), reportController.getDashboardStats);
+router.post('/ai-summary', reportController.getAiSummary);
 
 module.exports = router;

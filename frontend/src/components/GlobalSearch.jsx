@@ -57,8 +57,12 @@ const GlobalSearch = () => {
         setQuery('');
         
         // Navigation logic based on result type
-        const role = localStorage.getItem('userRole')?.toLowerCase();
-        const base = role === 'super_admin' ? '/admin/dashboard' : `/${role === 'manager' ? 'manager' : 'hr'}/dashboard`;
+        const role = localStorage.getItem('userRole')?.toLowerCase() || 'employee';
+        let base = '/employee/dashboard';
+        if (role === 'super_admin') base = '/admin/dashboard';
+        else if (role === 'hr_manager') base = '/hr/dashboard';
+        else if (role === 'finance') base = '/finance/dashboard';
+        else if (role === 'manager' || role === 'team_lead') base = '/manager/dashboard';
         
         if (type === 'employee') {
             navigate(`${base}/employees`);

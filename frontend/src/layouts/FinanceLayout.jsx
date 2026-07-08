@@ -4,9 +4,10 @@ import { getMyProfile } from '../features/employees/api/employeeService';
 import { getMyNotifications, markAsRead, markAllAsRead } from '../features/notifications/api/notificationService';
 import { 
     LayoutDashboard, Users, CircleDollarSign, 
-    LineChart, Bell, LogOut, ArrowLeftRight, Landmark, CreditCard, Banknote, Briefcase, FileText
+    LineChart, Bell, LogOut, ArrowLeftRight, Landmark, CreditCard, Banknote, Briefcase, FileText, Bot
 } from 'lucide-react';
 import GlobalSearch from '../components/GlobalSearch';
+import NotificationsBadge from '../features/notifications/components/NotificationsBadge';
 import './FinanceLayout.css';
 
 const financeNavItems = [
@@ -19,6 +20,7 @@ const financeNavItems = [
     ]},
     { section: 'Analytics', items: [
         { label: 'Financial Reports', icon: LineChart, path: '/finance/dashboard/reports' },
+        { label: 'AI Assistant', icon: Bot, path: '/finance/dashboard/ai-assistant' },
     ]}
 ];
 
@@ -111,10 +113,7 @@ const FinanceLayout = ({ children, title = 'Finance Department' }) => {
                         <button className="switch-portal-btn finance-btn" onClick={() => navigate('/portal')} title="Switch Portal">
                             <ArrowLeftRight size={16} /> Switch Portal
                         </button>
-                        <div className="finance-topbar-badge" onClick={() => setShowNotifications(!showNotifications)}>
-                            <Bell size={18} />
-                            {unreadCount > 0 && <span className="finance-badge-dot">{unreadCount}</span>}
-                        </div>
+                        <NotificationsBadge />
                         <div className="finance-user-avatar" onClick={() => navigate('/finance/dashboard/profile')}>
                             {avatarContent}
                         </div>

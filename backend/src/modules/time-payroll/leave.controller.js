@@ -110,6 +110,19 @@ exports.updateLeaveStatus = async (req, res) => {
                     ? `Great news! Your ${leave.leaveType} request for ${leave.startDate.split('T')[0]} to ${leave.endDate.split('T')[0]} has been APPROVED.`
                     : `Your ${leave.leaveType} request for ${leave.startDate.split('T')[0]} to ${leave.endDate.split('T')[0]} has been ${status.toUpperCase()}.`;
 
+                // Emit Real-time Notification
+                const User = require('../auth/user.model');
+                const user = await User.findOne({ email: employeeForEmail.email });
+                if (user) {
+                    const { createNotification } = require('../notifications/notification.controller');
+                    await createNotification(
+                        user._id,
+                        `Leave Request ${status}`,
+                        message,
+                        'Leave'
+                    );
+                }
+
                 sendEmail({
                     email: employeeForEmail.email,
                     subject: `Leave Request ${status} - Enterprise Workforce`,
@@ -210,6 +223,39 @@ exports.predictLeave = async (req, res) => {
             leaveType: leave.leaveType,
             duration: duration,
             reason: leave.reason
+        }, empStats, teamStats);
+
+        res.status(200).json({ success: true, data: aiPrediction });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Predict Leave Approval for a new request (before submitting)
+// @route   POST /api/v1/time-payroll/leave/ai-prediction
+// @access  Private (EMPLOYEE, MANAGER, HR)
+exports.predictNewLeave = async (req, res) => {
+    try {
+        const { leaveType, startDate, endDate, reason } = req.body;
+        const employeeId = req.user.employeeId;
+        if (!employeeId) return res.status(400).json({ success: false, message: 'No employee profile' });
+
+        const Employee = require('../hr/employee.model');
+        const employee = await Employee.findById(employeeId);
+        
+        // Mock team stats for now
+        const teamStats = { totalMembers: 12, onLeave: 2 };
+        
+        const empStats = { 
+            sickTaken: employee.leaveBalance?.sick ? (10 - employee.leaveBalance.sick) : 0 
+        };
+
+        const duration = (new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24) + 1;
+
+        const aiPrediction = await aiLeave.predictLeaveApproval({
+            leaveType,
+            duration: duration || 1,
+            reason: reason || 'Not specified'
         }, empStats, teamStats);
 
         res.status(200).json({ success: true, data: aiPrediction });

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getMyGoals, createGoal, updateGoalProgress } from '../api/performanceService';
 import { Target, Calendar, CheckCircle } from 'lucide-react';
-import '../../components/shared.css';
+import '../../../components/shared.css';
 
 const Goals = () => {
     const [goals, setGoals] = useState([]);

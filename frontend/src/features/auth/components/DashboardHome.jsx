@@ -214,6 +214,7 @@ const DashboardHome = () => {
             { icon: '📢', label: 'News/Events', onClick: () => navigate('/hr/dashboard/announcements') },
             { icon: '🎓', label: 'Training', onClick: () => navigate('/hr/dashboard/training') },
             { icon: '🎯', label: 'Post Job', onClick: () => navigate('/hr/dashboard/recruitment') },
+            { icon: '🤖', label: 'AI Assistant', onClick: () => navigate('/hr/dashboard/ai-assistant') },
         ];
     } else if (role === 'FINANCE') {
         statCards = [
@@ -226,6 +227,7 @@ const DashboardHome = () => {
             { icon: '💰', label: 'Run Payroll', onClick: () => navigate('/finance/dashboard/payroll') },
             { icon: '🧾', label: 'Expenses', onClick: () => navigate('/finance/dashboard/reports') },
             { icon: '📊', label: 'Fin Reports', onClick: () => navigate('/finance/dashboard/reports') },
+            { icon: '🤖', label: 'AI Assistant', onClick: () => navigate('/finance/dashboard/ai-assistant') },
         ];
     } else if (role === 'MANAGER' || role === 'TEAM_LEAD') {
         statCards = [
@@ -238,7 +240,7 @@ const DashboardHome = () => {
             { icon: '👥', label: 'View Team', onClick: () => navigate('/manager/dashboard/employees') },
             { icon: '📋', label: 'Approve Leaves', onClick: () => navigate('/manager/dashboard/leave') },
             { icon: '🚀', label: 'Projects', onClick: () => navigate('/manager/dashboard/projects') },
-            { icon: '🏆', label: 'Review Team', onClick: () => navigate('/manager/dashboard/performance') },
+            { icon: '🤖', label: 'AI Assistant', onClick: () => navigate('/manager/dashboard/ai-assistant') },
         ];
     } else {
         const totalLeave = userProfile?.leaveBalance ? 
@@ -261,7 +263,7 @@ const DashboardHome = () => {
             { icon: '📋', label: 'Apply Leave', onClick: () => navigate('/employee/dashboard/leave') },
             { icon: '💰', label: 'Payslips', onClick: () => navigate('/employee/dashboard/payroll') },
             { icon: '🎫', label: 'IT Help', onClick: () => navigate('/employee/dashboard/helpdesk') },
-            { icon: '🎓', label: 'My Learning', onClick: () => navigate('/employee/dashboard/learning') },
+            { icon: '🤖', label: 'AI Assistant', onClick: () => navigate('/employee/dashboard/ai-assistant') },
         ];
     }
 
