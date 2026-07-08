@@ -76,6 +76,8 @@ const Payroll = () => {
         } finally {
             setBatchGenerating(false);
         }
+    };
+
     const handleAIAudit = async () => {
         try {
             setAnalyzing(true);
