@@ -30,3 +30,13 @@ export const updatePayrollStatus = async (id, status) => {
     const response = await axios.put(`${API_URL}/${id}/status`, { status }, getAuthHeader());
     return response.data;
 };
+
+export const batchGeneratePayroll = async (payload) => {
+    const response = await axios.post(`${API_URL}/batch-generate`, payload, getAuthHeader());
+    return response.data;
+};
+
+export const runPayrollAIAudit = async (id) => {
+    const response = await axios.post(`${API_URL}/ai-audit`, {}, getAuthHeader());
+    return response.data;
+};

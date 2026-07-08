@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { generatePayroll, getMyPayslips, getAllPayrolls, updatePayrollStatus } from './api/payrollService';
+import { generatePayroll, batchGeneratePayroll, getMyPayslips, getAllPayrolls, updatePayrollStatus, runPayrollAIAudit } from './api/payrollService';
 import { getEmployees } from '../employees/api/employeeService';
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
 import '../../components/shared.css';
@@ -20,6 +20,7 @@ const Payroll = () => {
     const [selectedEmployee, setSelectedEmployee] = useState('');
     const [payPeriod, setPayPeriod] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
     const [generating, setGenerating] = useState(false);
+    const [batchGenerating, setBatchGenerating] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -62,15 +63,23 @@ const Payroll = () => {
         }
     };
 
+    const handleBatchGenerate = async () => {
+        if (!window.confirm(`Are you sure you want to generate payroll for ALL active employees for ${payPeriod}?`)) return;
+        setBatchGenerating(true);
+        setError('');
+        try {
+            const res = await batchGeneratePayroll({ payPeriod });
+            fetchData();
+            alert(res.message || 'Batch payroll generated successfully!');
+        } catch (err) {
+            setError(err.response?.data?.message || 'Error generating batch payroll');
+        } finally {
+            setBatchGenerating(false);
+        }
     const handleAIAudit = async () => {
         try {
             setAnalyzing(true);
-            const token = localStorage.getItem('userToken');
-            const res = await fetch(`https://enterprise-workforce-management.onrender.com/api/v1/time-payroll/payroll/ai-audit`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const result = await res.json();
+            const result = await runPayrollAIAudit();
             if (result.success) {
                 setAiResult(result.data);
             } else {
@@ -204,8 +213,11 @@ const Payroll = () => {
                                     required 
                                 />
                             </div>
-                            <button type="submit" className="btn-primary" disabled={generating} style={{ height: '42px', padding: '0 24px' }}>
+                            <button type="submit" className="btn-primary" disabled={generating || batchGenerating} style={{ height: '42px', padding: '0 24px' }}>
                                 {generating ? 'Generating...' : 'Generate Payslip'}
+                            </button>
+                            <button type="button" className="btn-secondary" onClick={handleBatchGenerate} disabled={generating || batchGenerating} style={{ height: '42px', padding: '0 24px' }}>
+                                {batchGenerating ? 'Processing Batch...' : 'Batch Generate All'}
                             </button>
                         </form>
                     </div>
@@ -238,9 +250,10 @@ const Payroll = () => {
                                         <th>Basic</th>
                                         <th>HRA</th>
                                         <th>Overtime</th>
+                                        <th>Deductions</th>
                                         <th>Net Salary</th>
                                         <th>Status</th>
-                                        {isAdmin && <th>Actions</th>}
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -256,20 +269,25 @@ const Payroll = () => {
                                             <td>${pay.basicSalary?.toFixed(2)}</td>
                                             <td>${pay.hra?.toFixed(2)}</td>
                                             <td>${pay.overtimePay?.toFixed(2)}</td>
+                                            <td style={{ color: 'var(--danger)' }}>-${pay.deductions?.toFixed(2)}</td>
                                             <td style={{ fontWeight: 700, color: 'var(--success)' }}>${pay.netSalary?.toFixed(2)}</td>
                                             <td>
                                                 <span className={`status-badge ${pay.status.toLowerCase()}`}>{pay.status}</span>
                                             </td>
-                                            {isAdmin && (
-                                                <td>
-                                                    {pay.status === 'Draft' && (
-                                                        <button className="btn-secondary" onClick={() => handleStatusUpdate(pay._id, 'Approved')} style={{ padding: '4px 8px', fontSize: '12px', marginRight: '8px' }}>Approve</button>
-                                                    )}
-                                                    {pay.status === 'Approved' && (
-                                                        <button className="btn-primary" onClick={() => handleStatusUpdate(pay._id, 'Paid')} style={{ padding: '4px 8px', fontSize: '12px' }}>Mark Paid</button>
-                                                    )}
-                                                </td>
-                                            )}
+                                            <td>
+                                                {isAdmin ? (
+                                                    <>
+                                                        {pay.status === 'Draft' && (
+                                                            <button className="btn-secondary" onClick={() => handleStatusUpdate(pay._id, 'Approved')} style={{ padding: '4px 8px', fontSize: '12px', marginRight: '8px' }}>Approve</button>
+                                                        )}
+                                                        {pay.status === 'Approved' && (
+                                                            <button className="btn-primary" onClick={() => handleStatusUpdate(pay._id, 'Paid')} style={{ padding: '4px 8px', fontSize: '12px' }}>Mark Paid</button>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <button className="ewm-btn-secondary" onClick={() => window.print()} style={{ padding: '4px 8px', fontSize: '12px' }}>Download PDF</button>
+                                                )}
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>

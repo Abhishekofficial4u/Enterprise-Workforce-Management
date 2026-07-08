@@ -40,9 +40,23 @@ exports.generatePayroll = async (req, res) => {
         const hra = basicSalary * 0.2; // 20% HRA
         const overtimeRate = (basicSalary / 30 / 8) * 1.5; // 1.5x hourly rate for overtime
         const overtimePay = totalOvertimeHours * overtimeRate;
-        const deductions = 0; // Keeping simple for now
         
-        const netSalary = basicSalary + hra + overtimePay - deductions;
+        // Detailed Deductions
+        const providentFund = basicSalary * 0.05; // 5% PF
+        const healthInsurance = 50; // Flat $50
+        const taxableIncome = basicSalary + hra + overtimePay - providentFund;
+        
+        // Simple progressive income tax
+        let incomeTax = 0;
+        if (taxableIncome > 5000) {
+            incomeTax = (taxableIncome - 5000) * 0.20 + (5000 * 0.10);
+        } else {
+            incomeTax = taxableIncome * 0.10;
+        }
+
+        const totalDeductions = providentFund + healthInsurance + incomeTax;
+        
+        const netSalary = basicSalary + hra + overtimePay - totalDeductions;
 
         const payroll = await Payroll.create({
             employeeId,
@@ -50,7 +64,12 @@ exports.generatePayroll = async (req, res) => {
             basicSalary,
             hra,
             overtimePay,
-            deductions,
+            deductions: totalDeductions,
+            deductionsBreakdown: {
+                incomeTax,
+                providentFund,
+                healthInsurance
+            },
             netSalary,
             status: 'Draft'
         });
@@ -113,6 +132,68 @@ exports.updatePayrollStatus = async (req, res) => {
         }
 
         res.status(200).json({ success: true, data: payroll, message: `Payroll status updated to ${status}` });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Batch generate payroll for all active employees
+// @route   POST /api/v1/time-payroll/payroll/batch-generate
+// @access  Private (FINANCE, SUPER_ADMIN)
+exports.batchGeneratePayroll = async (req, res) => {
+    try {
+        const { payPeriod } = req.body;
+        if (!payPeriod) return res.status(400).json({ success: false, message: 'Pay period is required' });
+
+        const employees = await Employee.find({ status: 'Active' });
+        let generatedCount = 0;
+
+        for (const employee of employees) {
+            const existing = await Payroll.findOne({ employeeId: employee._id, payPeriod });
+            if (existing) continue;
+
+            const attendanceRecords = await Attendance.find({
+                employeeId: employee._id,
+                date: { $regex: `^${payPeriod}` }
+            });
+
+            let totalOvertimeHours = 0;
+            attendanceRecords.forEach(record => totalOvertimeHours += record.overtime);
+
+            const basicSalary = employee.salary;
+            const hra = basicSalary * 0.2;
+            const overtimeRate = (basicSalary / 30 / 8) * 1.5;
+            const overtimePay = totalOvertimeHours * overtimeRate;
+            
+            const providentFund = basicSalary * 0.05;
+            const healthInsurance = 50;
+            const taxableIncome = basicSalary + hra + overtimePay - providentFund;
+            
+            let incomeTax = 0;
+            if (taxableIncome > 5000) {
+                incomeTax = (taxableIncome - 5000) * 0.20 + (5000 * 0.10);
+            } else {
+                incomeTax = taxableIncome * 0.10;
+            }
+
+            const totalDeductions = providentFund + healthInsurance + incomeTax;
+            const netSalary = basicSalary + hra + overtimePay - totalDeductions;
+
+            await Payroll.create({
+                employeeId: employee._id,
+                payPeriod,
+                basicSalary,
+                hra,
+                overtimePay,
+                deductions: totalDeductions,
+                deductionsBreakdown: { incomeTax, providentFund, healthInsurance },
+                netSalary,
+                status: 'Draft'
+            });
+            generatedCount++;
+        }
+
+        res.status(201).json({ success: true, message: `Batch payroll generated for ${generatedCount} employees.` });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

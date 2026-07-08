@@ -27,10 +27,12 @@ router.get('/leave/:id/ai-prediction', authorize('EMPLOYEE', 'MANAGER', 'HR_MANA
 
 // ---- PAYROLL ROUTES ----
 router.post('/payroll/generate', authorize('FINANCE', 'SUPER_ADMIN', 'HR_MANAGER'), payrollController.generatePayroll);
+router.post('/payroll/batch-generate', authorize('FINANCE', 'SUPER_ADMIN', 'HR_MANAGER'), payrollController.batchGeneratePayroll);
 router.get('/payroll/my', payrollController.getMyPayslips);
 router.get('/payroll/all', authorize('FINANCE', 'SUPER_ADMIN', 'HR_MANAGER'), payrollController.getAllPayrolls);
 router.put('/payroll/:id/status', authorize('FINANCE', 'SUPER_ADMIN', 'HR_MANAGER'), payrollController.updatePayrollStatus);
 router.post('/payroll/ai-audit', authorize('FINANCE', 'SUPER_ADMIN', 'HR_MANAGER', 'ORG_ADMIN'), payrollController.runAIAudit);
+
 
 // ---- SHIFT SCHEDULING ROUTES ----
 router.get('/shifts', authorize('MANAGER', 'HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), shiftController.getShifts);

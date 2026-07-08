@@ -32,6 +32,11 @@ const PayrollSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    deductionsBreakdown: {
+        incomeTax: { type: Number, default: 0 },
+        providentFund: { type: Number, default: 0 },
+        healthInsurance: { type: Number, default: 0 }
+    },
     netSalary: {
         type: Number,
         required: true
