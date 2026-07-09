@@ -96,7 +96,6 @@ exports.getEmployees = async (req, res) => {
         const employees = await Employee.find(query).populate('manager', 'name employeeId');
 
         // Strip salary field if user is not HR or Finance
-        const userRole = req.user.role;
         const canViewSalary = ['HR_MANAGER', 'FINANCE', 'SUPER_ADMIN'].includes(userRole);
 
         const safeEmployees = employees.map(emp => {
