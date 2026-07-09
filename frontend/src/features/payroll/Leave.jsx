@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { applyLeave, getMyLeaves, getAllLeaves, updateLeaveStatus, getMyLeaveBalance } from './api/leaveService';
+import { applyLeave, getMyLeaves, getAllLeaves, updateLeaveStatus, getMyLeaveBalance, runAiPrediction } from './api/leaveService';
 import Papa from 'papaparse';
 import '../../components/shared.css';
 
@@ -72,21 +72,12 @@ const Leave = () => {
     const handleAIPredict = async (leave) => {
         try {
             setAnalyzingId(leave._id);
-            const token = localStorage.getItem('userToken');
-            const res = await fetch(`https://enterprise-workforce-management.onrender.com/api/v1/time-payroll/leave/ai-prediction`, {
-                method: 'POST',
-                headers: { 
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ 
-                    leaveType: leave.leaveType, 
-                    startDate: leave.startDate, 
-                    endDate: leave.endDate, 
-                    reason: leave.reason 
-                })
+            const result = await runAiPrediction({ 
+                leaveType: leave.leaveType, 
+                startDate: leave.startDate, 
+                endDate: leave.endDate, 
+                reason: leave.reason 
             });
-            const result = await res.json();
             if (result.success) {
                 setAiResult(result.data);
             } else {
@@ -103,16 +94,7 @@ const Leave = () => {
         if (!startDate || !endDate) return alert('Please select Start Date and End Date first');
         try {
             setAnalyzingId('form');
-            const token = localStorage.getItem('userToken');
-            const res = await fetch(`https://enterprise-workforce-management.onrender.com/api/v1/time-payroll/leave/ai-prediction`, {
-                method: 'POST',
-                headers: { 
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ leaveType, startDate, endDate, reason })
-            });
-            const result = await res.json();
+            const result = await runAiPrediction({ leaveType, startDate, endDate, reason });
             if (result.success) {
                 setAiResult(result.data);
             } else {

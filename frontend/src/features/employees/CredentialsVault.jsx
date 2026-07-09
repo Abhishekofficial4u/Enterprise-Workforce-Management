@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../../api/apiClient';
 import '../../components/shared.css';
 
 const CredentialsVault = () => {
@@ -16,11 +16,7 @@ const CredentialsVault = () => {
         setLoading(true);
         setError('');
         try {
-            const token = localStorage.getItem('userToken');
-            const res = await axios.post('https://enterprise-workforce-management.onrender.com/api/v1/auth/admin/credentials-vault', 
-                { adminPassword },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const res = await apiClient.post('/auth/admin/credentials-vault', { adminPassword });
             setVaultData(res.data.data);
             setUnlocked(true);
         } catch (err) {
@@ -34,11 +30,7 @@ const CredentialsVault = () => {
         if (!window.confirm(`Are you sure you want to login as ${userEmail}? You will be logged out of your Admin session.`)) return;
         
         try {
-            const token = localStorage.getItem('userToken');
-            const res = await axios.post(`https://enterprise-workforce-management.onrender.com/api/v1/auth/admin/impersonate/${userId}`, 
-                {},
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const res = await apiClient.post(`/auth/admin/impersonate/${userId}`, {});
             
             // Overwrite local storage with the new token
             localStorage.setItem('userToken', res.data.token);

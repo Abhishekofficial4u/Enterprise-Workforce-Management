@@ -1,37 +1,27 @@
-import axios from 'axios';
-
-const API_URL = 'https://enterprise-workforce-management.onrender.com/api/v1/helpdesk';
-
-const getAuthHeader = () => {
-    const token = localStorage.getItem('userToken');
-    return {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    };
-};
+import apiClient from '../../../api/apiClient';
 
 export const createTicket = async (ticketData) => {
-    const response = await axios.post(API_URL, ticketData, getAuthHeader());
+    const response = await apiClient.post('/helpdesk', ticketData);
     return response.data;
 };
 
 export const getMyTickets = async () => {
-    const response = await axios.get(`${API_URL}/my`, getAuthHeader());
+    const response = await apiClient.get('/helpdesk/my');
     return response.data;
 };
 
 export const getAllTickets = async () => {
-    const response = await axios.get(API_URL, getAuthHeader());
+    const response = await apiClient.get('/helpdesk');
     return response.data;
 };
 
 export const updateTicket = async (id, updateData) => {
-    const response = await axios.put(`${API_URL}/${id}`, updateData, getAuthHeader());
+    const response = await apiClient.put(`/helpdesk/${id}`, updateData);
     return response.data;
 };
 
 export const addResponse = async (id, message) => {
-    const response = await axios.post(`${API_URL}/${id}/respond`, { message }, getAuthHeader());
+    const response = await apiClient.post(`/helpdesk/${id}/respond`, { message });
     return response.data;
 };
+

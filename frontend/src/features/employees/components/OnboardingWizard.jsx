@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import apiClient from '../../../api/apiClient';
 import { CheckCircle, Circle, ArrowRight, ShieldCheck, FileText, User } from 'lucide-react';
 
 const OnboardingWizard = ({ employee, onComplete }) => {
@@ -19,9 +19,6 @@ const OnboardingWizard = ({ employee, onComplete }) => {
     const handleStepComplete = async (stepId) => {
         setSaving(true);
         try {
-            const token = localStorage.getItem('userToken');
-            const API_URL = import.meta.env.VITE_API_URL || 'https://enterprise-workforce-management.onrender.com/api/v1';
-            
             const payload = {
                 onboarding: {
                     steps: {
@@ -29,10 +26,7 @@ const OnboardingWizard = ({ employee, onComplete }) => {
                     }
                 }
             };
-            
-            await axios.put(`${API_URL}/hr/employees/me/onboarding`, payload, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await apiClient.put('/hr/employees/me/onboarding', payload);
             
             if (onComplete) onComplete();
         } catch (error) {

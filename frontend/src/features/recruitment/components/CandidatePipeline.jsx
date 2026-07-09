@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getCandidates, createCandidate, updateCandidateStage } from '../api/recruitmentService';
+import { getCandidates, createCandidate, updateCandidateStage, runAiScreen } from '../api/recruitmentService';
 import './CandidatePipeline.css';
 
 const STAGES = ['Applied', 'Screening', 'Interview', 'Offered', 'Hired', 'Rejected'];
@@ -45,19 +45,14 @@ const CandidatePipeline = ({ job }) => {
     const handleAIScreen = async (candidateId) => {
         try {
             setAnalyzingId(candidateId);
-            const token = localStorage.getItem('userToken');
-            const res = await fetch(`https://enterprise-workforce-management.onrender.com/api/v1/recruitment/candidates/${candidateId}/ai-screen`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const result = await res.json();
+            const result = await runAiScreen(candidateId);
             if (result.success) {
                 setAiResult(result.data);
             } else {
                 alert(result.message || 'AI Screening failed');
             }
         } catch (error) {
-            alert('Error running AI screen');
+            alert(error.response?.data?.message || 'Error running AI screen');
         } finally {
             setAnalyzingId(null);
             fetchCandidates(); // refresh to show saved score if applicable

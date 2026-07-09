@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '../../api/apiClient';
 import { ChevronDown, ChevronUp, User, Mail, Briefcase, Hash, Building2 } from 'lucide-react';
 import { Tree, TreeNode } from 'react-organizational-chart';
 import './OrgChart.css';
@@ -45,10 +45,7 @@ const OrgChart = () => {
 
     const fetchHierarchy = async () => {
         try {
-            const token = localStorage.getItem('userToken');
-            const res = await axios.get('https://enterprise-workforce-management.onrender.com/api/v1/org/hierarchy', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const res = await apiClient.get('/org/hierarchy');
             if (res.data.success) {
                 setHierarchy(res.data.data);
             }

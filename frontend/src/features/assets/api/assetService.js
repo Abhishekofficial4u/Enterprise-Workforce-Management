@@ -1,32 +1,22 @@
-import axios from 'axios';
-
-const API_URL = 'https://enterprise-workforce-management.onrender.com/api/v1/assets';
-
-const getAuthHeader = () => {
-    const token = localStorage.getItem('userToken');
-    return {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    };
-};
+import apiClient from '../../../api/apiClient';
 
 export const createAsset = async (assetData) => {
-    const response = await axios.post(API_URL, assetData, getAuthHeader());
+    const response = await apiClient.post('/assets', assetData);
     return response.data;
 };
 
 export const getAllAssets = async () => {
-    const response = await axios.get(API_URL, getAuthHeader());
+    const response = await apiClient.get('/assets');
     return response.data;
 };
 
 export const updateAsset = async (id, updateData) => {
-    const response = await axios.put(`${API_URL}/${id}`, updateData, getAuthHeader());
+    const response = await apiClient.put(`/assets/${id}`, updateData);
     return response.data;
 };
 
 export const deleteAsset = async (id) => {
-    const response = await axios.delete(`${API_URL}/${id}`, getAuthHeader());
+    const response = await apiClient.delete(`/assets/${id}`);
     return response.data;
 };
+

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '../../api/apiClient';
 import { Bot, User, Send, Loader2, Sparkles } from 'lucide-react';
 import '../../components/shared.css';
 
@@ -27,13 +27,8 @@ const AiAssistant = () => {
         setMessages(prev => [...prev, userMsg]);
         setInputMsg('');
         setIsTyping(true);
-
         try {
-            const token = localStorage.getItem('userToken');
-            const res = await axios.post('https://enterprise-workforce-management.onrender.com/api/v1/ai/chat', 
-                { message: userMsg.text },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const res = await apiClient.post('/ai/chat', { message: userMsg.text });
             
             const botMsg = { id: Date.now(), sender: 'bot', text: res.data.reply };
             setMessages(prev => [...prev, botMsg]);

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getShifts, createShift, deleteShift } from '../api/shiftService';
+import { getEmployees } from '../../employees/api/employeeService';
 
 const ShiftManagement = () => {
     const [shifts, setShifts] = useState([]);
@@ -31,11 +32,8 @@ const ShiftManagement = () => {
 
     const fetchEmployees = async () => {
         try {
-            const res = await fetch('https://enterprise-workforce-management.onrender.com/api/v1/hr/employees', {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('userToken')}` }
-            });
-            const data = await res.json();
-            setEmployees(data);
+            const res = await getEmployees();
+            setEmployees(res.data || []);
         } catch (error) {
             console.error('Error fetching employees', error);
         }

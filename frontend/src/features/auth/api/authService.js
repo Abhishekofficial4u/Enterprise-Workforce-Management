@@ -1,9 +1,7 @@
-import axios from 'axios';
-
-const API_URL = 'https://enterprise-workforce-management.onrender.com/api/v1/auth';
+import apiClient from '../../../api/apiClient';
 
 export const login = async (email, password) => {
-    const response = await axios.post(`${API_URL}/login`, { email, password });
+    const response = await apiClient.post('/auth/login', { email, password });
     if (response.data.token) {
         localStorage.setItem('userToken', response.data.token);
         
@@ -19,11 +17,12 @@ export const login = async (email, password) => {
 };
 
 export const forgotPassword = async (email) => {
-    const response = await axios.post(`${API_URL}/forgot-password`, { email });
+    const response = await apiClient.post('/auth/forgot-password', { email });
     return response.data;
 };
 
 export const resetPassword = async (token, password) => {
-    const response = await axios.put(`${API_URL}/reset-password/${token}`, { password });
+    const response = await apiClient.put(`/auth/reset-password/${token}`, { password });
     return response.data;
 };
+

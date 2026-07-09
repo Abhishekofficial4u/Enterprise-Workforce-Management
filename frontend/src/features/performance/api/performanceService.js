@@ -1,59 +1,49 @@
-import axios from 'axios';
-
-const API_URL = 'https://enterprise-workforce-management.onrender.com/api/v1/performance';
-
-axios.interceptors.request.use((config) => {
-    const token = localStorage.getItem('userToken');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-});
+import apiClient from '../../../api/apiClient';
 
 export const getMyReviews = async () => {
-    const response = await axios.get(`${API_URL}/my`);
+    const response = await apiClient.get('/performance/my');
     return response.data;
 };
 
 export const acknowledgeReview = async (id) => {
-    const response = await axios.patch(`${API_URL}/${id}/acknowledge`);
+    const response = await apiClient.patch(`/performance/${id}/acknowledge`);
     return response.data;
 };
 
 export const getAllReviews = async () => {
-    const response = await axios.get(API_URL);
+    const response = await apiClient.get('/performance');
     return response.data;
 };
 
 export const createReview = async (data) => {
-    const response = await axios.post(API_URL, data);
+    const response = await apiClient.post('/performance', data);
     return response.data;
 };
 
 // Goals API
 export const createGoal = async (data) => {
-    const response = await axios.post(`${API_URL}/goals`, data);
+    const response = await apiClient.post('/performance/goals', data);
     return response.data;
 };
 
 export const getMyGoals = async () => {
-    const response = await axios.get(`${API_URL}/goals/my`);
+    const response = await apiClient.get('/performance/goals/my');
     return response.data;
 };
 
 export const updateGoalProgress = async (id, data) => {
-    const response = await axios.patch(`${API_URL}/goals/${id}`, data);
+    const response = await apiClient.patch(`/performance/goals/${id}`, data);
     return response.data;
 };
 
 // Peer Feedback API
 export const submitFeedback = async (data) => {
-    const response = await axios.post(`${API_URL}/feedback`, data);
+    const response = await apiClient.post('/performance/feedback', data);
     return response.data;
 };
 
 // AI Performance Draft
 export const generateAIDraft = async (employeeId) => {
-    const response = await axios.post(`${API_URL}/ai-draft/${employeeId}`);
+    const response = await apiClient.post(`/performance/ai-draft/${employeeId}`);
     return response.data;
 };

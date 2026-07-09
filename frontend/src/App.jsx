@@ -1,38 +1,44 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import LandingPage from './features/auth/components/LandingPage';
-import RolePortal from './features/auth/components/RolePortal';
-import Login from './features/auth/components/Login';
-import ForgotPassword from './features/auth/components/ForgotPassword';
-import ResetPassword from './features/auth/components/ResetPassword';
-import DashboardHome from './features/auth/components/DashboardHome';
+
+// Layouts (Static imports to avoid layout flash)
 import AdminLayout from './layouts/AdminLayout';
 import HRLayout from './layouts/HRLayout';
 import FinanceLayout from './layouts/FinanceLayout';
 import ManagerLayout from './layouts/ManagerLayout';
 import EmployeeLayout from './layouts/EmployeeLayout';
-import Employees from './features/employees/Employees';
-import Profile from './features/employees/Profile';
-import CredentialsVault from './features/employees/CredentialsVault';
-import OrgChart from './features/employees/OrgChart';
-import Attendance from './features/attendance/Attendance';
-import Leave from './features/payroll/Leave';
-import ShiftManagement from './features/attendance/components/ShiftManagement';
-import Payroll from './features/payroll/Payroll';
-import ProjectsHome from './features/projects/ProjectsHome';
-import ProjectKanban from './features/projects/components/ProjectKanban';
-import RecruitmentHome from './features/recruitment/RecruitmentHome';
-import JobBoard from './features/recruitment/components/JobBoard';
-import PerformanceHome from './features/performance/PerformanceHome';
-import AuditLogs from './features/admin/AuditLogs';
-import HelpDesk from './features/helpdesk/HelpDesk';
-import Assets from './features/assets/Assets';
-import Reports from './features/reports/Reports';
-import AiAssistant from './features/ai/AiAssistant';
-import AnnouncementsManager from './features/employees/components/AnnouncementsManager';
-import TrainingManager from './features/hr/components/TrainingManager';
-import LearningPortal from './features/employees/components/LearningPortal';
-import Settings from './features/settings/Settings';
+
+// Auth Pages (Lazy loaded)
+const LandingPage = lazy(() => import('./features/auth/components/LandingPage'));
+const RolePortal = lazy(() => import('./features/auth/components/RolePortal'));
+const Login = lazy(() => import('./features/auth/components/Login'));
+const ForgotPassword = lazy(() => import('./features/auth/components/ForgotPassword'));
+const ResetPassword = lazy(() => import('./features/auth/components/ResetPassword'));
+const DashboardHome = lazy(() => import('./features/auth/components/DashboardHome'));
+
+// Core Feature Pages (Lazy loaded)
+const Employees = lazy(() => import('./features/employees/Employees'));
+const Profile = lazy(() => import('./features/employees/Profile'));
+const CredentialsVault = lazy(() => import('./features/employees/CredentialsVault'));
+const OrgChart = lazy(() => import('./features/employees/OrgChart'));
+const Attendance = lazy(() => import('./features/attendance/Attendance'));
+const Leave = lazy(() => import('./features/payroll/Leave'));
+const ShiftManagement = lazy(() => import('./features/attendance/components/ShiftManagement'));
+const Payroll = lazy(() => import('./features/payroll/Payroll'));
+const ProjectsHome = lazy(() => import('./features/projects/ProjectsHome'));
+const ProjectKanban = lazy(() => import('./features/projects/components/ProjectKanban'));
+const RecruitmentHome = lazy(() => import('./features/recruitment/RecruitmentHome'));
+const JobBoard = lazy(() => import('./features/recruitment/components/JobBoard'));
+const PerformanceHome = lazy(() => import('./features/performance/PerformanceHome'));
+const AuditLogs = lazy(() => import('./features/admin/AuditLogs'));
+const HelpDesk = lazy(() => import('./features/helpdesk/HelpDesk'));
+const Assets = lazy(() => import('./features/assets/Assets'));
+const Reports = lazy(() => import('./features/reports/Reports'));
+const AiAssistant = lazy(() => import('./features/ai/AiAssistant'));
+const AnnouncementsManager = lazy(() => import('./features/employees/components/AnnouncementsManager'));
+const TrainingManager = lazy(() => import('./features/hr/components/TrainingManager'));
+const LearningPortal = lazy(() => import('./features/employees/components/LearningPortal'));
+const Settings = lazy(() => import('./features/settings/Settings'));
 
 // Guard: redirect to login if no token
 const PrivateRoute = ({ children }) => {
@@ -83,7 +89,13 @@ const PermWrap = ({ children, perms }) => <PrivateRoute><PermissionRoute require
 function App() {
     return (
         <BrowserRouter>
-            <Routes>
+            <Suspense fallback={
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: 'var(--bg)', color: 'var(--text-muted)', gap: 16 }}>
+                    <div className="spinner"></div>
+                    <div style={{ fontSize: 14, fontWeight: 500 }}>Loading page...</div>
+                </div>
+            }>
+                <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/careers" element={<div style={{ minHeight: '100vh', background: 'var(--bg)', padding: '40px 0' }}><div style={{ maxWidth: 1200, margin: '0 auto' }}><h1 style={{ padding: '0 24px', color: 'var(--text-primary)' }}>Careers at Enterprise</h1><JobBoard /></div></div>} />
@@ -200,7 +212,8 @@ function App() {
                 {/* Default redirect to Landing Page instead of Login */}
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
-        </BrowserRouter>
+        </Suspense>
+    </BrowserRouter>
     );
 }
 

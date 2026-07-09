@@ -1,53 +1,43 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'https://enterprise-workforce-management.onrender.com/api/v1';
-
-const getAuthHeader = () => {
-    const token = localStorage.getItem('userToken');
-    return {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    };
-};
+import apiClient from '../../../api/apiClient';
 
 export const getTrainingPrograms = async () => {
-    const response = await axios.get(`${API_URL}/hr/training`, getAuthHeader());
+    const response = await apiClient.get('/hr/training');
     return response.data;
 };
 
 export const createTrainingProgram = async (data) => {
-    const response = await axios.post(`${API_URL}/hr/training`, data, getAuthHeader());
+    const response = await apiClient.post('/hr/training', data);
     return response.data;
 };
 
 export const updateTrainingProgram = async (id, data) => {
-    const response = await axios.put(`${API_URL}/hr/training/${id}`, data, getAuthHeader());
+    const response = await apiClient.put(`/hr/training/${id}`, data);
     return response.data;
 };
 
 export const deleteTrainingProgram = async (id) => {
-    const response = await axios.delete(`${API_URL}/hr/training/${id}`, getAuthHeader());
+    const response = await apiClient.delete(`/hr/training/${id}`);
     return response.data;
 };
 
 export const enrollEmployee = async (employeeId, trainingProgramId) => {
-    const response = await axios.post(`${API_URL}/hr/training/enroll`, { employeeId, trainingProgramId }, getAuthHeader());
+    const response = await apiClient.post('/hr/training/enroll', { employeeId, trainingProgramId });
     return response.data;
 };
 
 export const getProgramEnrollments = async (id) => {
-    const response = await axios.get(`${API_URL}/hr/training/${id}/enrollments`, getAuthHeader());
+    const response = await apiClient.get(`/hr/training/${id}/enrollments`);
     return response.data;
 };
 
 // Employee specific
 export const getMyLearning = async () => {
-    const response = await axios.get(`${API_URL}/hr/employees/me/learning`, getAuthHeader());
+    const response = await apiClient.get('/hr/employees/me/learning');
     return response.data;
 };
 
 export const updateEnrollmentStatus = async (id, status) => {
-    const response = await axios.put(`${API_URL}/hr/learning/enrollments/${id}`, { status }, getAuthHeader());
+    const response = await apiClient.put(`/hr/learning/enrollments/${id}`, { status });
     return response.data;
 };
+

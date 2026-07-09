@@ -1,37 +1,32 @@
-import axios from 'axios';
-
-const API_URL = 'https://enterprise-workforce-management.onrender.com/api/v1/time-payroll/leave';
-
-const getAuthHeader = () => {
-    const token = localStorage.getItem('userToken');
-    return {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    };
-};
+import apiClient from '../../../api/apiClient';
 
 export const applyLeave = async (payload) => {
-    const response = await axios.post(API_URL, payload, getAuthHeader());
+    const response = await apiClient.post('/time-payroll/leave', payload);
     return response.data;
 };
 
 export const getMyLeaves = async () => {
-    const response = await axios.get(`${API_URL}/my`, getAuthHeader());
+    const response = await apiClient.get('/time-payroll/leave/my');
     return response.data;
 };
 
 export const getMyLeaveBalance = async () => {
-    const response = await axios.get(`${API_URL}/balance`, getAuthHeader());
+    const response = await apiClient.get('/time-payroll/leave/balance');
     return response.data;
 };
 
 export const getAllLeaves = async () => {
-    const response = await axios.get(`${API_URL}/all`, getAuthHeader());
+    const response = await apiClient.get('/time-payroll/leave/all');
     return response.data;
 };
 
 export const updateLeaveStatus = async (id, status) => {
-    const response = await axios.patch(`${API_URL}/${id}/status`, { status }, getAuthHeader());
+    const response = await apiClient.patch(`/time-payroll/leave/${id}/status`, { status });
     return response.data;
 };
+
+export const runAiPrediction = async (payload) => {
+    const response = await apiClient.post('/time-payroll/leave/ai-prediction', payload);
+    return response.data;
+};
+
