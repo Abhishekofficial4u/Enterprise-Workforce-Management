@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EWM Complete System Architecture</title>
+    <!-- Google Fonts for professional typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#f1f5f9',
+                primaryTextColor: '#1e293b',
+                primaryBorderColor: '#cbd5e1',
+                lineColor: '#64748b',
+                secondaryColor: '#f8fafc',
+                tertiaryColor: '#fff',
+                fontFamily: 'Inter, sans-serif',
+                fontSize: '14px',
+            },
+            flowchart: {
+                curve: 'basis',
+                nodeSpacing: 50,
+                rankSpacing: 50,
+                padding: 15
+            },
+            sequence: {
+                actorMargin: 50,
+                messageMargin: 40
+            }
+        });
+    </script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --secondary: #10b981;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--dark), #1e293b);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            border-bottom: 4px solid var(--primary);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        .header p {
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            color: #94a3b8;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            border: 1px solid var(--border);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--light);
+        }
+
+        .section-header i {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-right: 1rem;
+            background: #e0e7ff;
+            padding: 0.75rem;
+            border-radius: 8px;
+        }
+
+        .section-title {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .section-desc {
+            color: var(--gray);
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .mermaid-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            display: flex;
+            justify-content: center;
+            padding: 1rem 0;
+        }
+
+        .mermaid svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Enterprise Workforce Management</h1>
+        <p>Comprehensive System Architecture, Data Flow, and Lifecycle Diagrams</p>
+    </div>
+
+    <div class="container">
+
+        <!-- 1. Complete System Architecture -->
+        <div class="section">
+            <div class="section-header">
+                <i class="fa-solid fa-network-wired"></i>
+                <div>
+                    <h2 class="section-title">1. Complete Platform Architecture</h2>
+                    <div class="section-desc">A macroscopic view of the entire EWM ecosystem, showing the React frontend layers, Express API micro-services, databases, and AI integration.</div>
+                </div>
+            </div>
+            <div class="mermaid-wrapper">
+                <pre class="mermaid">
+                flowchart TB
+                    %% Nodes styling
+                    classDef client fill:#f1f5f9,stroke:#64748b,stroke-width:1px,color:#0f172a,rx:5px,ry:5px
+                    classDef frontend fill:#eff6ff,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a,rx:8px,ry:8px
+                    classDef backend fill:#ecfdf5,stroke:#10b981,stroke-width:2px,color:#064e3b,rx:8px,ry:8px
+                    classDef db fill:#fffbeb,stroke:#f59e0b,stroke-width:2px,color:#78350f,rx:8px,ry:8px
+                    classDef external fill:#faf5ff,stroke:#a855f7,stroke-width:2px,color:#581c87,rx:8px,ry:8px
+
+                    %% Client Layer
+                    subgraph Client["Client Devices"]
+                        Web[Web Browser]:::client
+                        Mobile[Mobile Device]:::client
+                    end
+
+                    %% Frontend Layer (React + Vite)
+                    subgraph FrontendLayer["Frontend Layer (React + Vite)"]
+                        Router[React Router DOM]:::frontend
+                        Context[Global Context & State]:::frontend
+                        
+                        subgraph Portals["Role-Based Portals"]
+                            AdminUI[Admin Portal]:::frontend
+                            HRUI[HR Portal]:::frontend
+                            FinUI[Finance Portal]:::frontend
+                            MgrUI[Manager Portal]:::frontend
+                            EmpUI[Employee Portal]:::frontend
+                        end
+                    end
+
+                    %% Load Balancer / Gateway
+                    Gateway((API Gateway / Nginx)):::client
+
+                    %% Backend Layer (Node + Express)
+                    subgraph BackendLayer["Backend API Layer (Node.js + Express)"]
+                        Middleware[Auth & Audit Middleware]:::backend
+                        
+                        subgraph Modules["Business Logic Modules"]
+                            Auth[Authentication API]:::backend
+                            HR[HR & Employee API]:::backend
+                            Time[Time & Payroll API]:::backend
+                            ATS[Recruitment API]:::backend
+                            Assets[IT & Asset API]:::backend
+                            Perf[Performance API]:::backend
+                            Reports[Analytics & AI API]:::backend
+                        end
+                    end
+
+                    %% Data Layer
+                    subgraph DataLayer["Data & Caching Layer"]
+                        MongoDB[(MongoDB Cluster)]:::db
+                        Redis[(Redis Cache)]:::db
+                        FileStorage[(Local / S3 Uploads)]:::db
+                    end
+
+                    %% External Integrations
+                    Gemini[Google Gemini AI Engine]:::external
+
+                    %% Connections
+                    Client -->|HTTPS| FrontendLayer
+                    Router --> Context
+                    Context --> Portals
+
+                    FrontendLayer -->|REST / JSON| Gateway
+                    Gateway --> Middleware
+                    Middleware --> Modules
+
+                    Modules -->|Mongoose ODM| MongoDB
+                    Modules -->|Key-Value Ops| Redis
+                    Assets --> FileStorage
+                    HR --> FileStorage
+
+                    Reports -.->|API Requests| Gemini
+                </pre>
+            </div>
+        </div>
+
+        <!-- 2. Detailed Data Entity Relationship (ERD) -->
+        <div class="section">
+            <div class="section-header">
+                <i class="fa-solid fa-database"></i>
+                <div>
+                    <h2 class="section-title">2. Core Database Schema (ERD)</h2>
+                    <div class="section-desc">The structural relationship between primary MongoDB collections, illustrating how Users, Employees, Attendance, and Payroll are linked.</div>
+                </div>
+            </div>
+            <div class="mermaid-wrapper">
+                <pre class="mermaid">
+                erDiagram
+                    USER ||--|| EMPLOYEE : "Linked By employeeId"
+                    EMPLOYEE ||--o{ ATTENDANCE : "Logs"
+                    EMPLOYEE ||--o{ PAYROLL : "Receives"
+                    EMPLOYEE ||--o{ LEAVE_REQUEST : "Creates"
+                    EMPLOYEE ||--o{ ASSET : "Assigned To"
+                    EMPLOYEE ||--o{ TICKET : "Raises"
+                    
+                    USER {
+                        ObjectId _id PK
+                        String email UK
+                        String passwordHash
+                        String role
+                        Array permissions
+                        Boolean isActive
+                    }
+
+                    EMPLOYEE {
+                        ObjectId _id PK
+                        String employeeId UK
+                        String name
+                        String department
+                        String designation
+                        Object leaveBalance
+                        Object onboarding
+                        ObjectId manager FK
+                    }
+
+                    ATTENDANCE {
+                        ObjectId _id PK
+                        ObjectId employeeId FK
+                        Date date
+                        Date clockIn
+                        Date clockOut
+                        String status
+                        Number workHours
+                    }
+
+                    PAYROLL {
+                        ObjectId _id PK
+                        ObjectId employeeId FK
+                        String payPeriod
+                        Number baseSalary
+                        Number netPay
+                        String status
+                    }
+
+                    SETTINGS {
+                        String singletonId PK
+                        String companyName
+                        Object defaultLeaveBalances
+                        Object payroll
+                    }
+                </pre>
+            </div>
+        </div>
+
+        <!-- 3. API Request Lifecycle -->
+        <div class="section">
+            <div class="section-header">
+                <i class="fa-solid fa-route"></i>
+                <div>
+                    <h2 class="section-title">3. Advanced API Request Lifecycle</h2>
+                    <div class="section-desc">A detailed sequence diagram tracking a secure API request (e.g., Requesting Leave) from the client to the database and back.</div>
+                </div>
+            </div>
+            <div class="mermaid-wrapper">
+                <pre class="mermaid">
+                sequenceDiagram
+                    autonumber
+                    participant C as Client (React)
+                    participant R as Router (Express)
+                    participant A as Auth Middleware
+                    participant CA as Cache Middleware
+                    participant CTRL as Controller
+                    participant DB as MongoDB
+                    participant AL as Audit Logger
+
+                    C->>R: POST /api/v1/hr/leave (JWT in Header)
+                    R->>A: Extract & Verify JWT Token
+                    
+                    alt Invalid Token
+                        A-->>C: 401 Unauthorized
+                    else Valid Token
+                        A->>A: Attach User to Request (req.user)
+                        A->>CA: Check Redis Cache (if GET request)
+                        
+                        alt Cache Hit
+                            CA-->>C: Return Cached JSON
+                        else Cache Miss (or POST/PUT)
+                            CA->>CTRL: Proceed to Controller Logic
+                            CTRL->>DB: Query/Update Document (Mongoose)
+                            DB-->>CTRL: Return Result
+                            
+                            CTRL->>AL: Log Action (e.g., 'LEAVE_REQUESTED')
+                            AL->>DB: Save Audit Log Entry
+                            
+                            CTRL->>CA: Invalidate Relevant Cache Keys
+                            CTRL-->>C: 200 OK / 201 Created (JSON Response)
+                        end
+                    end
+                </pre>
+            </div>
+        </div>
+
+        <!-- 4. Payroll Generation Flow -->
+        <div class="section">
+            <div class="section-header">
+                <i class="fa-solid fa-money-check-dollar"></i>
+                <div>
+                    <h2 class="section-title">4. Finance & Payroll Processing Logic</h2>
+                    <div class="section-desc">A procedural flowchart demonstrating how the system calculates payroll automatically at the end of the month using settings and time tracking.</div>
+                </div>
+            </div>
+            <div class="mermaid-wrapper">
+                <pre class="mermaid">
+                stateDiagram-v2
+                    direction TB
+                    
+                    state "Start Payroll Cycle" as Start
+                    state "Fetch Global Settings" as Settings
+                    state "Fetch Employee Data" as FetchEmp
+                    state "Aggregate Monthly Attendance" as Att
+                    state "Calculate Hours & Overtime" as CalcHours
+                    state "Calculate Deductions (Taxes/Leaves)" as CalcDed
+                    state "Generate Payslip Object" as GenSlip
+                    state "Save to Payroll DB (Status: Pending)" as SaveDB
+                    state "Finance Approves & Marks Paid" as Approve
+                    state "Employee Downloads PDF Payslip" as PDF
+                    
+                    Start --> Settings: Initialize
+                    Settings --> FetchEmp: Load Tax %, Base Hours
+                    FetchEmp --> Att: For Each Employee
+                    Att --> CalcHours: Sum clock-in/out diffs
+                    CalcHours --> CalcDed: Apply Tax & Unpaid Leaves
+                    CalcDed --> GenSlip: Base + Overtime - Deductions = Net Pay
+                    GenSlip --> SaveDB: Store Record
+                    
+                    SaveDB --> Approve: Finance Review
+                    Approve --> PDF: Available in Employee Portal
+                </pre>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        &copy; 2026 Enterprise Workforce Management Project • Highly Professional Documentation
+    </footer>
+
+</body>
+</html>

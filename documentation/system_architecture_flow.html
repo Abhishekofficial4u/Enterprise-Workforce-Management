@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Workforce Management - Flow Diagrams</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: #f8fafc;
+        }
+        h1, h2 {
+            color: #1e293b;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+        .diagram-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            margin-bottom: 3rem;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Enterprise Workforce Management - Flow Diagrams</h1>
+    <p>This document contains flow diagrams mapping out the architecture and processes of the Enterprise Workforce Management system.</p>
+
+    <h2>1. High-Level Architecture & Modules</h2>
+    <p>This diagram illustrates the core components of the system and how they interact.</p>
+    <div class="diagram-container">
+        <pre class="mermaid">
+        graph TD
+            classDef frontend fill:#3b82f6,stroke:#1d4ed8,stroke-width:2px,color:#fff
+            classDef backend fill:#10b981,stroke:#047857,stroke-width:2px,color:#fff
+            classDef database fill:#f59e0b,stroke:#b45309,stroke-width:2px,color:#fff
+            classDef external fill:#8b5cf6,stroke:#6d28d9,stroke-width:2px,color:#fff
+
+            User((Users)) -->|HTTP/HTTPS| FE[Frontend React App]
+            
+            subgraph Frontend Application
+                FE --> AuthUI[Auth & Routing]
+                AuthUI --> Admin[Admin Portal]
+                AuthUI --> HR[HR Portal]
+                AuthUI --> Fin[Finance Portal]
+                AuthUI --> Mgr[Manager Portal]
+                AuthUI --> Emp[Employee Portal]
+            end
+
+            Frontend Application -->|REST API / Axios| BE[Backend Node/Express API]
+
+            subgraph Backend Services
+                BE --> AuthAPI[Auth Module]
+                BE --> HRAPI[HR Module]
+                BE --> TimeAPI[Time & Payroll]
+                BE --> ATSAPI[Recruitment ATS]
+                BE --> ITAPI[Help Desk & Assets]
+                BE --> PerfAPI[Performance]
+                BE --> RepoAPI[Reports & Analytics]
+            end
+
+            Backend Services -->|Mongoose| DB[(MongoDB)]
+            Backend Services -->|Redis Client| Cache[(Redis Cache)]
+            
+            RepoAPI -.->|Data Context| GeminiAPI[Google Gemini AI]
+
+            class FE,AuthUI,Admin,HR,Fin,Mgr,Emp frontend
+            class BE,AuthAPI,HRAPI,TimeAPI,ATSAPI,ITAPI,PerfAPI,RepoAPI backend
+            class DB,Cache database
+            class GeminiAPI external
+        </pre>
+    </div>
+
+    <h2>2. Authentication & Role-Based Access Flow</h2>
+    <p>This flow shows how users authenticate and are routed to their respective dashboards based on their role.</p>
+    <div class="diagram-container">
+        <pre class="mermaid">
+        sequenceDiagram
+            participant User
+            participant Frontend
+            participant Backend
+            participant DB
+            
+            User->>Frontend: Enter Credentials (Email & Password)
+            Frontend->>Backend: POST /api/v1/auth/login
+            Backend->>DB: Query User by Email
+            DB-->>Backend: Return User Record
+            Backend->>Backend: Verify Password Hash
+            
+            alt Invalid Credentials
+                Backend-->>Frontend: 401 Unauthorized
+                Frontend-->>User: Show Error Message
+            else Valid Credentials
+                Backend->>Backend: Generate JWT Token
+                Backend-->>Frontend: 200 OK (Token + User Data)
+                Frontend->>Frontend: Store Token in localStorage
+                
+                Note over Frontend: Routing logic based on Role
+                
+                alt Role == SUPER_ADMIN / ORG_ADMIN
+                    Frontend->>User: Redirect to /admin/dashboard
+                else Role == HR_MANAGER
+                    Frontend->>User: Redirect to /hr/dashboard
+                else Role == FINANCE
+                    Frontend->>User: Redirect to /finance/dashboard
+                else Role == MANAGER / TEAM_LEAD
+                    Frontend->>User: Redirect to /manager/dashboard
+                else Role == EMPLOYEE
+                    Frontend->>User: Redirect to /employee/dashboard
+                end
+            end
+        </pre>
+    </div>
+
+    <h2>3. Employee Onboarding Flow</h2>
+    <p>This flow illustrates the sequence of actions when a new employee is hired and joins the organization.</p>
+    <div class="diagram-container">
+        <pre class="mermaid">
+        graph TD
+            classDef hr fill:#ec4899,stroke:#be185d,stroke-width:2px,color:#fff
+            classDef sys fill:#10b981,stroke:#047857,stroke-width:2px,color:#fff
+            classDef emp fill:#3b82f6,stroke:#1d4ed8,stroke-width:2px,color:#fff
+
+            Start([HR Creates Employee]) --> |HR Portal| SysCreate(System Creates Profile & User Account)
+            SysCreate --> SysEmail(System Sends Default Credentials to Employee)
+            
+            SysEmail --> EmpLogin([Employee Logs In])
+            EmpLogin --> Wizard{Onboarding Completed?}
+            
+            Wizard -- No --> ShowWizard(Show Onboarding Wizard)
+            ShowWizard --> UpdateProfile(Employee Completes Profile)
+            UpdateProfile --> UploadDocs(Employee Uploads Docs)
+            UploadDocs --> AckPolicies(Employee Acknowledges Policies)
+            AckPolicies --> DoneWizard(System Marks Onboarding = true)
+            DoneWizard --> Dash([Access Standard Dashboard])
+            
+            Wizard -- Yes --> Dash
+            
+            class Start hr
+            class SysCreate,SysEmail,Wizard,ShowWizard,DoneWizard sys
+            class EmpLogin,UpdateProfile,UploadDocs,AckPolicies,Dash emp
+        </pre>
+    </div>
+
+    <h2>4. Time, Leave, and Payroll Data Flow</h2>
+    <p>This diagram shows how daily time tracking and leave requests eventually feed into the monthly payroll processing.</p>
+    <div class="diagram-container">
+        <pre class="mermaid">
+        graph LR
+            classDef emp fill:#3b82f6,stroke:#1d4ed8,stroke-width:2px,color:#fff
+            classDef mgr fill:#f59e0b,stroke:#b45309,stroke-width:2px,color:#fff
+            classDef sys fill:#10b981,stroke:#047857,stroke-width:2px,color:#fff
+            classDef fin fill:#8b5cf6,stroke:#6d28d9,stroke-width:2px,color:#fff
+
+            subgraph Daily Tracking
+                Clock[Employee Clock In/Out]
+                Track[System Calculates Work Hours]
+                Clock --> Track
+            end
+
+            subgraph Leave Management
+                LeaveReq[Employee Requests Leave]
+                LeaveApp[Manager/HR Approves Leave]
+                LeaveReq --> LeaveApp
+            end
+
+            subgraph End of Month Processing
+                AggTime[System Aggregates Total Hours & Deducts Leaves]
+                GlobalSet[Fetch Global Settings: Base Hours, Tax Rate]
+                GenPay[Finance Clicks 'Generate Payroll']
+                AggTime --> GenPay
+                GlobalSet --> GenPay
+                LeaveApp --> AggTime
+                Track --> AggTime
+            end
+
+            subgraph Payroll Finalization
+                PayCalc[System Calculates Net Pay, Deductions, Overtime]
+                ApprovePay[Finance Marks as 'Paid']
+                PaySlip[Employee Downloads PDF Payslip]
+                
+                GenPay --> PayCalc
+                PayCalc --> ApprovePay
+                ApprovePay --> PaySlip
+            end
+            
+            class Clock,LeaveReq,PaySlip emp
+            class LeaveApp mgr
+            class Track,AggTime,GlobalSet,PayCalc sys
+            class GenPay,ApprovePay fin
+        </pre>
+    </div>
+</body>
+</html>

@@ -1,47 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ChevronDown, ChevronUp, User, Mail, Briefcase, Hash, Building2 } from 'lucide-react';
-import './OrgChart.css'; // We will create this for the connecting lines
+import { Tree, TreeNode } from 'react-organizational-chart';
+import './OrgChart.css';
 
-const TreeNode = ({ node, onNodeClick }) => {
-    const [expanded, setExpanded] = useState(true);
-
+const StyledNode = ({ node, onNodeClick }) => {
     return (
-        <div className="org-tree-node">
-            <div className="org-card" onClick={() => onNodeClick(node)} style={{ cursor: 'pointer' }}>
-                <div className="org-card-header">
-                    <div className="org-avatar">
-                        {node.profilePhoto ? (
-                            <img src={node.profilePhoto} alt={node.name} />
-                        ) : (
-                            <div className="org-avatar-placeholder"><User size={16} /></div>
-                        )}
-                    </div>
-                    <div className="org-info">
-                        <h4>{node.name}</h4>
-                        <p>{node.designation}</p>
-                    </div>
+        <div className="org-card" onClick={() => onNodeClick(node)}>
+            <div className="org-card-header">
+                <div className="org-avatar">
+                    {node.profilePhoto ? (
+                        <img src={node.profilePhoto} alt={node.name} />
+                    ) : (
+                        <div className="org-avatar-placeholder"><User size={16} /></div>
+                    )}
                 </div>
-                {node.children && node.children.length > 0 && (
-                    <div 
-                        className="org-expand-btn" 
-                        onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
-                        style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px', background: 'var(--bg)', borderRadius: '50%', marginTop: '8px' }}
-                    >
-                        {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                    </div>
-                )}
+                <div className="org-info">
+                    <h4>{node.name}</h4>
+                    <p>{node.designation}</p>
+                </div>
             </div>
-            
-            {expanded && node.children && node.children.length > 0 && (
-                <div className="org-children">
-                    {node.children.map(child => (
-                        <TreeNode key={child._id} node={child} onNodeClick={onNodeClick} />
-                    ))}
-                </div>
-            )}
         </div>
     );
+};
+
+const renderTreeNodes = (nodes, onNodeClick) => {
+    if (!nodes || nodes.length === 0) return null;
+    return nodes.map((node) => (
+        <TreeNode key={node._id} label={<StyledNode node={node} onNodeClick={onNodeClick} />}>
+            {node.children && node.children.length > 0 && renderTreeNodes(node.children, onNodeClick)}
+        </TreeNode>
+    ));
 };
 
 const OrgChart = () => {
@@ -83,7 +72,17 @@ const OrgChart = () => {
             <div className="org-tree-wrapper">
                 {hierarchy.length > 0 ? (
                     hierarchy.map(rootNode => (
-                        <TreeNode key={rootNode._id} node={rootNode} onNodeClick={setSelectedEmployee} />
+                        <Tree
+                            key={rootNode._id}
+                            lineWidth={'2px'}
+                            lineColor={'var(--border)'}
+                            lineBorderRadius={'10px'}
+                            lineHeight={'30px'}
+                            nodePadding={'5px'}
+                            label={<StyledNode node={rootNode} onNodeClick={setSelectedEmployee} />}
+                        >
+                            {rootNode.children && rootNode.children.length > 0 && renderTreeNodes(rootNode.children, setSelectedEmployee)}
+                        </Tree>
                     ))
                 ) : (
                     <div className="empty-state">No organization data found.</div>
