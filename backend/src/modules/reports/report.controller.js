@@ -70,6 +70,18 @@ exports.getDashboardStats = async (req, res) => {
             riskScore: Math.min(Math.round((emp.totalLeaveBalance / 30) * 100), 98) // Normalize to a percentage up to 98%
         }));
 
+        // 5. Payroll Stats
+        const Payroll = require('../time-payroll/payroll.model');
+        
+        const totalPayrollDocs = await Payroll.countDocuments();
+        const pendingPayrollDocs = await Payroll.countDocuments({ status: 'Pending' });
+        
+        const payrollSummary = await Payroll.aggregate([
+            { $group: { _id: null, totalNetPay: { $sum: "$netPay" }, totalDeductions: { $sum: "$deductions" } } }
+        ]);
+
+        const totalNetPay = payrollSummary.length > 0 ? payrollSummary[0].totalNetPay : 0;
+
         res.status(200).json({
             success: true,
             data: {
@@ -77,7 +89,10 @@ exports.getDashboardStats = async (req, res) => {
                     totalEmployees,
                     totalAssets,
                     totalTickets,
-                    openTickets
+                    openTickets,
+                    totalPayrollProcessed: totalPayrollDocs,
+                    pendingPayroll: pendingPayrollDocs,
+                    totalNetPay
                 },
                 charts: {
                     departmentDistribution: departmentDistribution.map(d => ({ name: d.name || 'Unassigned', value: d.value })),

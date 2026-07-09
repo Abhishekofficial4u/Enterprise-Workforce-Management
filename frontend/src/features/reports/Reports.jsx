@@ -101,13 +101,16 @@ const Reports = () => {
         );
     }
 
+    const role = localStorage.getItem('userRole');
+    const isFinance = role === 'FINANCE';
+
     return (
         <>
             <div>
                 <div className="page-header">
                     <div className="page-header-left">
                         <h1>Reports & Analytics</h1>
-                        <p>High-level insights across all organizational modules</p>
+                        <p>{isFinance ? 'Financial insights and payroll overview' : 'High-level insights across all organizational modules'}</p>
                     </div>
                     <div>
                         <button className="btn-secondary" onClick={exportToCSV} style={{ marginRight: 10 }}>
@@ -139,22 +142,45 @@ const Reports = () => {
 
                 {/* KPI Cards */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 15, marginBottom: 30 }}>
-                    <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)', borderTop: '4px solid #6366f1' }}>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Total Employees</div>
-                        <div style={{ fontSize: 28, fontWeight: 'bold', marginTop: 5 }}>{data.summary.totalEmployees}</div>
-                    </div>
-                    <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)', borderTop: '4px solid #10b981' }}>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Total Assets</div>
-                        <div style={{ fontSize: 28, fontWeight: 'bold', marginTop: 5 }}>{data.summary.totalAssets}</div>
-                    </div>
-                    <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)', borderTop: '4px solid #f59e0b' }}>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Total Support Tickets</div>
-                        <div style={{ fontSize: 28, fontWeight: 'bold', marginTop: 5 }}>{data.summary.totalTickets}</div>
-                    </div>
-                    <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)', borderTop: '4px solid #ef4444' }}>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Open Support Tickets</div>
-                        <div style={{ fontSize: 28, fontWeight: 'bold', marginTop: 5 }}>{data.summary.openTickets}</div>
-                    </div>
+                    {isFinance ? (
+                        <>
+                            <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)', borderTop: '4px solid #6366f1' }}>
+                                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Total Employees</div>
+                                <div style={{ fontSize: 28, fontWeight: 'bold', marginTop: 5 }}>{data.summary.totalEmployees}</div>
+                            </div>
+                            <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)', borderTop: '4px solid #10b981' }}>
+                                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Total Payroll Processed</div>
+                                <div style={{ fontSize: 28, fontWeight: 'bold', marginTop: 5 }}>{data.summary.totalPayrollProcessed || 0}</div>
+                            </div>
+                            <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)', borderTop: '4px solid #f59e0b' }}>
+                                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Pending Payroll</div>
+                                <div style={{ fontSize: 28, fontWeight: 'bold', marginTop: 5 }}>{data.summary.pendingPayroll || 0}</div>
+                            </div>
+                            <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)', borderTop: '4px solid #ef4444' }}>
+                                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Total Net Pay Processed</div>
+                                <div style={{ fontSize: 28, fontWeight: 'bold', marginTop: 5 }}>${(data.summary.totalNetPay || 0).toLocaleString()}</div>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)', borderTop: '4px solid #6366f1' }}>
+                                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Total Employees</div>
+                                <div style={{ fontSize: 28, fontWeight: 'bold', marginTop: 5 }}>{data.summary.totalEmployees}</div>
+                            </div>
+                            <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)', borderTop: '4px solid #10b981' }}>
+                                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Total Assets</div>
+                                <div style={{ fontSize: 28, fontWeight: 'bold', marginTop: 5 }}>{data.summary.totalAssets}</div>
+                            </div>
+                            <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)', borderTop: '4px solid #f59e0b' }}>
+                                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Total Support Tickets</div>
+                                <div style={{ fontSize: 28, fontWeight: 'bold', marginTop: 5 }}>{data.summary.totalTickets}</div>
+                            </div>
+                            <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)', borderTop: '4px solid #ef4444' }}>
+                                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Open Support Tickets</div>
+                                <div style={{ fontSize: 28, fontWeight: 'bold', marginTop: 5 }}>{data.summary.openTickets}</div>
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {/* Charts Grid */}
@@ -187,60 +213,64 @@ const Reports = () => {
                     </div>
 
                     {/* Ticket Status Chart */}
-                    <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)' }}>
-                        <h3 style={{ marginBottom: 20 }}>Help Desk Ticket Status</h3>
-                        <div style={{ height: 300 }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={data.charts.ticketStatusDist}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#2d2d3f" />
-                                    <XAxis dataKey="name" stroke="#6b7280" />
-                                    <YAxis stroke="#6b7280" />
-                                    <Tooltip contentStyle={{ background: '#1e1e2d', border: 'none', borderRadius: 8, color: '#fff' }} cursor={{fill: 'transparent'}}/>
-                                    <Bar dataKey="value" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-
-                    {/* Asset Status Chart */}
-                    <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)' }}>
-                        <h3 style={{ marginBottom: 20 }}>Asset Availability</h3>
-                        <div style={{ height: 300 }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={data.charts.assetStatusDist}
-                                        cx="50%"
-                                        cy="50%"
-                                        outerRadius={100}
-                                        dataKey="value"
-                                    >
-                                        {data.charts.assetStatusDist.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip contentStyle={{ background: '#1e1e2d', border: 'none', borderRadius: 8, color: '#fff' }} />
-                                    <Legend />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-
-                    {/* Asset Category Chart */}
-                    <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)' }}>
-                        <h3 style={{ marginBottom: 20 }}>Asset Categories</h3>
-                        <div style={{ height: 300 }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={data.charts.assetCategoryDist} layout="vertical">
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#2d2d3f" />
-                                    <XAxis type="number" stroke="#6b7280" />
-                                    <YAxis dataKey="name" type="category" stroke="#6b7280" width={100} />
-                                    <Tooltip contentStyle={{ background: '#1e1e2d', border: 'none', borderRadius: 8, color: '#fff' }} cursor={{fill: 'transparent'}}/>
-                                    <Bar dataKey="value" fill="#f59e0b" radius={[0, 4, 4, 0]} />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
+                    {!isFinance && (
+                        <>
+                            <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)' }}>
+                                <h3 style={{ marginBottom: 20 }}>Help Desk Ticket Status</h3>
+                                <div style={{ height: 300 }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={data.charts.ticketStatusDist}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#2d2d3f" />
+                                            <XAxis dataKey="name" stroke="#6b7280" />
+                                            <YAxis stroke="#6b7280" />
+                                            <Tooltip contentStyle={{ background: '#1e1e2d', border: 'none', borderRadius: 8, color: '#fff' }} cursor={{fill: 'transparent'}}/>
+                                            <Bar dataKey="value" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+        
+                            {/* Asset Status Chart */}
+                            <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)' }}>
+                                <h3 style={{ marginBottom: 20 }}>Asset Availability</h3>
+                                <div style={{ height: 300 }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={data.charts.assetStatusDist}
+                                                cx="50%"
+                                                cy="50%"
+                                                outerRadius={100}
+                                                dataKey="value"
+                                            >
+                                                {data.charts.assetStatusDist.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip contentStyle={{ background: '#1e1e2d', border: 'none', borderRadius: 8, color: '#fff' }} />
+                                            <Legend />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+        
+                            {/* Asset Category Chart */}
+                            <div style={{ background: 'var(--bg-card)', padding: 20, borderRadius: 12, border: '1px solid var(--border)' }}>
+                                <h3 style={{ marginBottom: 20 }}>Asset Categories</h3>
+                                <div style={{ height: 300 }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={data.charts.assetCategoryDist} layout="vertical">
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#2d2d3f" />
+                                            <XAxis type="number" stroke="#6b7280" />
+                                            <YAxis dataKey="name" type="category" stroke="#6b7280" width={100} />
+                                            <Tooltip contentStyle={{ background: '#1e1e2d', border: 'none', borderRadius: 8, color: '#fff' }} cursor={{fill: 'transparent'}}/>
+                                            <Bar dataKey="value" fill="#f59e0b" radius={[0, 4, 4, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {/* Predictive Analytics Section */}

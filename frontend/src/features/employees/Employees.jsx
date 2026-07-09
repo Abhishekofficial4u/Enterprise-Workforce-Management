@@ -16,6 +16,8 @@ const Employees = () => {
     const [activeDept, setActiveDept] = useState('All');
     const [showAddModal, setShowAddModal] = useState(false);
     
+    const role = localStorage.getItem('userRole');
+
     // New states for View/Edit
     const [viewEmployee, setViewEmployee] = useState(null);
     const [editEmployee, setEditEmployee] = useState(null);
@@ -127,9 +129,11 @@ const Employees = () => {
                     </div>
                     <div style={{ display: 'flex', gap: 10 }}>
                         <button className="btn-secondary" onClick={handleExport}>⬇️ Export</button>
-                        <button className="btn-primary" onClick={() => setShowAddModal(true)}>
-                            ➕ Add Employee
-                        </button>
+                        {role !== 'FINANCE' && (
+                            <button className="btn-primary" onClick={() => setShowAddModal(true)}>
+                                ➕ Add Employee
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -238,11 +242,15 @@ const Employees = () => {
                                             <td>
                                                 <div className="action-btns">
                                                     <div className="icon-btn" title="View" onClick={() => setViewEmployee(emp)}>👁️</div>
-                                                    <div className="icon-btn" title="Edit" onClick={() => setEditEmployee(emp)}>✏️</div>
-                                                    {emp.status === 'Archived' ? (
-                                                        <div className="icon-btn" title="Permanently Delete" onClick={() => handleDelete(emp)}>🗑️</div>
-                                                    ) : (
-                                                        <div className="icon-btn" title="Archive" onClick={() => handleArchive(emp)}>🗃️</div>
+                                                    {role !== 'FINANCE' && (
+                                                        <>
+                                                            <div className="icon-btn" title="Edit" onClick={() => setEditEmployee(emp)}>✏️</div>
+                                                            {emp.status === 'Archived' ? (
+                                                                <div className="icon-btn" title="Permanently Delete" onClick={() => handleDelete(emp)}>🗑️</div>
+                                                            ) : (
+                                                                <div className="icon-btn" title="Archive" onClick={() => handleArchive(emp)}>🗃️</div>
+                                                            )}
+                                                        </>
                                                     )}
                                                 </div>
                                             </td>
