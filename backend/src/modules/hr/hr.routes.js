@@ -21,6 +21,8 @@ router.route('/employees/me')
     .get(employeeController.getMyProfile)
     .put(employeeController.updateMyProfile);
 
+router.put('/employees/me/onboarding', employeeController.updateOnboarding);
+
 router.route('/employees/:id')
     .put(authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), auditLog('UPDATE_EMPLOYEE', 'EMPLOYEES'), employeeController.updateEmployee)
     .delete(authorize('HR_MANAGER', 'SUPER_ADMIN', 'ORG_ADMIN'), auditLog('ARCHIVE_EMPLOYEE', 'EMPLOYEES'), employeeController.archiveEmployee);

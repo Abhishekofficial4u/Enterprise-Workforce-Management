@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { generatePayroll, batchGeneratePayroll, getMyPayslips, getAllPayrolls, updatePayrollStatus, runPayrollAIAudit } from './api/payrollService';
 import { getEmployees } from '../employees/api/employeeService';
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import '../../components/shared.css';
 
 const Payroll = () => {
@@ -124,6 +126,43 @@ const Payroll = () => {
     }, [payrolls, isAdmin]);
 
     const colors = ['#6366f1', '#10b981', '#f59e0b', '#0ea5e9', '#8b5cf6'];
+
+    const generatePayslipPDF = (pay) => {
+        const doc = new jsPDF();
+        
+        doc.setFontSize(22);
+        doc.text('Enterprise Workforce', 14, 20);
+        
+        doc.setFontSize(16);
+        doc.text('Payslip', 14, 30);
+        
+        doc.setFontSize(11);
+        doc.text(`Employee Name: ${pay.employeeId?.name || 'Self'}`, 14, 45);
+        doc.text(`Pay Period: ${pay.payPeriod}`, 14, 52);
+        doc.text(`Status: ${pay.status}`, 14, 59);
+
+        const tableColumn = ["Description", "Amount"];
+        const tableRows = [
+            ["Basic Salary", `$${pay.basicSalary?.toFixed(2) || '0.00'}`],
+            ["HRA", `$${pay.hra?.toFixed(2) || '0.00'}`],
+            ["Overtime Pay", `$${pay.overtimePay?.toFixed(2) || '0.00'}`],
+            ["Deductions", `-$${pay.deductions?.toFixed(2) || '0.00'}`],
+            ["Net Salary", `$${pay.netSalary?.toFixed(2) || '0.00'}`]
+        ];
+
+        doc.autoTable({
+            startY: 70,
+            head: [tableColumn],
+            body: tableRows,
+            theme: 'grid',
+            headStyles: { fillColor: [44, 62, 80] }
+        });
+
+        doc.setFontSize(10);
+        doc.text('This is a computer generated document. No signature is required.', 14, doc.lastAutoTable.finalY + 20);
+
+        doc.save(`Payslip_${pay.payPeriod}_${pay.employeeId?.name || 'Self'}.pdf`);
+    };
 
     return (
         <>
@@ -278,16 +317,17 @@ const Payroll = () => {
                                             </td>
                                             <td>
                                                 {isAdmin ? (
-                                                    <>
+                                                    <div style={{ display: 'flex', gap: '8px' }}>
                                                         {pay.status === 'Draft' && (
-                                                            <button className="btn-secondary" onClick={() => handleStatusUpdate(pay._id, 'Approved')} style={{ padding: '4px 8px', fontSize: '12px', marginRight: '8px' }}>Approve</button>
+                                                            <button className="btn-secondary" onClick={() => handleStatusUpdate(pay._id, 'Approved')} style={{ padding: '4px 8px', fontSize: '12px' }}>Approve</button>
                                                         )}
                                                         {pay.status === 'Approved' && (
                                                             <button className="btn-primary" onClick={() => handleStatusUpdate(pay._id, 'Paid')} style={{ padding: '4px 8px', fontSize: '12px' }}>Mark Paid</button>
                                                         )}
-                                                    </>
+                                                        <button className="ewm-btn-secondary" onClick={() => generatePayslipPDF(pay)} style={{ padding: '4px 8px', fontSize: '12px' }}>PDF</button>
+                                                    </div>
                                                 ) : (
-                                                    <button className="ewm-btn-secondary" onClick={() => window.print()} style={{ padding: '4px 8px', fontSize: '12px' }}>Download PDF</button>
+                                                    <button className="ewm-btn-secondary" onClick={() => generatePayslipPDF(pay)} style={{ padding: '4px 8px', fontSize: '12px' }}>Download PDF</button>
                                                 )}
                                             </td>
                                         </tr>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { applyLeave, getMyLeaves, getAllLeaves, updateLeaveStatus, getMyLeaveBalance } from './api/leaveService';
+import Papa from 'papaparse';
 import '../../components/shared.css';
 
 const Leave = () => {
@@ -60,7 +61,7 @@ const Leave = () => {
             setStartDate('');
             setEndDate('');
             setReason('');
-            alert('Leave application submitted!');
+            setLeaveType('Casual Leave');
         } catch (err) {
             setError(err.response?.data?.message || 'Error applying for leave');
         } finally {
@@ -68,13 +69,22 @@ const Leave = () => {
         }
     };
 
-    const handleAIPredict = async (leaveId) => {
+    const handleAIPredict = async (leave) => {
         try {
-            setAnalyzingId(leaveId);
+            setAnalyzingId(leave._id);
             const token = localStorage.getItem('userToken');
-            const res = await fetch(`https://enterprise-workforce-management.onrender.com/api/v1/time-payroll/leave/${leaveId}/ai-prediction`, {
-                method: 'GET',
-                headers: { 'Authorization': `Bearer ${token}` }
+            const res = await fetch(`https://enterprise-workforce-management.onrender.com/api/v1/time-payroll/leave/ai-prediction`, {
+                method: 'POST',
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    leaveType: leave.leaveType, 
+                    startDate: leave.startDate, 
+                    endDate: leave.endDate, 
+                    reason: leave.reason 
+                })
             });
             const result = await res.json();
             if (result.success) {
@@ -124,6 +134,29 @@ const Leave = () => {
         }
     };
 
+    const exportToCSV = () => {
+        const dataToExport = leaves.map(l => ({
+            Employee_ID: l.employeeId?.employeeId || '-',
+            Name: l.employeeId?.name || '-',
+            Leave_Type: l.leaveType,
+            Start_Date: l.startDate.split('T')[0],
+            End_Date: l.endDate.split('T')[0],
+            Reason: l.reason,
+            Status: l.status,
+            Applied_On: l.createdAt.split('T')[0]
+        }));
+        const csv = Papa.unparse(dataToExport);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `Leave_Report.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
         <>
             <div>
@@ -132,6 +165,11 @@ const Leave = () => {
                         <h1>{isAdmin ? 'Leave Requests' : 'My Leaves'}</h1>
                         <p>{isAdmin ? 'Manage and approve organizational leave requests' : 'Apply and track your leave status'}</p>
                     </div>
+                    {isAdmin && (
+                        <div style={{ display: 'flex', gap: 10 }}>
+                            <button className="btn-primary" onClick={exportToCSV}>📥 Export Report</button>
+                        </div>
+                    )}
                 </div>
 
                 {error && <div className="alert-error" style={{marginBottom: 20}}>⚠️ {error}</div>}

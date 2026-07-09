@@ -219,6 +219,42 @@ exports.deleteEmployee = async (req, res) => {
     }
 };
 
+// @desc    Update My Onboarding Status
+// @route   PUT /api/v1/hr/employees/me/onboarding
+// @access  Private (Self)
+exports.updateOnboarding = async (req, res) => {
+    try {
+        const employeeId = req.user.employeeId;
+        if (!employeeId) return res.status(400).json({ success: false, message: 'No linked employee profile' });
+
+        const employee = await Employee.findById(employeeId);
+        if (!employee) return res.status(404).json({ success: false, message: 'Employee not found' });
+        
+        employee.onboarding = {
+            ...employee.onboarding,
+            ...req.body.onboarding,
+            steps: {
+                ...employee.onboarding.steps,
+                ...(req.body.onboarding?.steps || {})
+            }
+        };
+
+        // Auto-complete onboarding if all steps are true
+        if (
+            employee.onboarding.steps.profileComplete &&
+            employee.onboarding.steps.documentsUploaded &&
+            employee.onboarding.steps.policiesAcknowledged
+        ) {
+            employee.onboarding.isCompleted = true;
+        }
+
+        await employee.save();
+        res.status(200).json({ success: true, data: employee });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 // @desc    Get logged in employee profile
 // @route   GET /api/v1/hr/employees/me
 // @access  Private

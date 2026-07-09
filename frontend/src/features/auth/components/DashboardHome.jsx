@@ -4,6 +4,7 @@ import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
     PieChart, Pie, Cell, Legend
 } from 'recharts';
+import OnboardingWizard from '../../employees/components/OnboardingWizard';
 import './Dashboard.css';
 
 const attendanceData = [
@@ -279,6 +280,17 @@ const DashboardHome = () => {
                     </div>
                     <div className="welcome-date">{now}</div>
                 </div>
+
+                {/* Onboarding Wizard (Only shown if incomplete) */}
+                {userProfile && userProfile.onboarding && !userProfile.onboarding.isCompleted && (
+                    <OnboardingWizard 
+                        employee={userProfile} 
+                        onComplete={() => setUserProfile({
+                            ...userProfile, 
+                            onboarding: { ...userProfile.onboarding, isCompleted: true }
+                        })} 
+                    />
+                )}
 
                 {/* Stats Grid */}
                 <div className="stats-grid">

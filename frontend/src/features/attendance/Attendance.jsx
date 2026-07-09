@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAllAttendance, getMyAttendance } from './api/attendanceService';
+import Papa from 'papaparse';
 import '../../components/shared.css';
 
 const today = new Date();
@@ -59,6 +60,29 @@ const Attendance = () => {
 
     const avatarColors = ['#6366f1','#0ea5e9','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6'];
 
+    const exportToCSV = () => {
+        const dataToExport = attendanceList.map(a => ({
+            Employee_ID: a.employeeId?.employeeId || '-',
+            Name: a.employeeId?.name || '-',
+            Date: a.date.split('T')[0],
+            Clock_In: a.clockInTime ? new Date(a.clockInTime).toLocaleTimeString() : '-',
+            Clock_Out: a.clockOutTime ? new Date(a.clockOutTime).toLocaleTimeString() : '-',
+            Total_Hours: a.totalHours?.toFixed(2) || '-',
+            Overtime_Hours: a.overtime?.toFixed(2) || '-',
+            Status: a.status
+        }));
+        const csv = Papa.unparse(dataToExport);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `Attendance_Report_${getDateStr(activeDate)}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
         <>
             <div>
@@ -69,7 +93,7 @@ const Attendance = () => {
                     </div>
                     <div style={{ display: 'flex', gap: 10 }}>
                         <button className="btn-secondary">📋 Request Correction</button>
-                        <button className="btn-primary">📥 Export Report</button>
+                        <button className="btn-primary" onClick={exportToCSV}>📥 Export Report</button>
                     </div>
                 </div>
 

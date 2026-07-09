@@ -57,6 +57,7 @@ const assetRoutes = require('./modules/assets/asset.routes');
 const reportRoutes = require('./modules/reports/report.routes');
 const aiRoutes = require('./modules/ai/ai.routes');
 const auditRoutes = require('./modules/audit/audit.routes');
+const settingsRoutes = require('./modules/settings/settings.routes');
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/hr', hrRoutes);
@@ -71,6 +72,7 @@ app.use('/api/v1/assets', assetRoutes);
 app.use('/api/v1/reports', reportRoutes);
 app.use('/api/v1/ai', aiRoutes);
 app.use('/api/v1/audit', auditRoutes);
+app.use('/api/v1/settings', settingsRoutes);
 
 // Start Server
 const PORT = process.env.PORT || 5000;

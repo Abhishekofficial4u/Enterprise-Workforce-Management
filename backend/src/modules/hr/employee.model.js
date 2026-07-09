@@ -92,6 +92,15 @@ const EmployeeSchema = new mongoose.Schema({
         casual: { type: Number, default: 15 },
         sick: { type: Number, default: 10 },
         earned: { type: Number, default: 15 }
+    },
+    // ---- Onboarding Tracking ----
+    onboarding: {
+        isCompleted: { type: Boolean, default: false },
+        steps: {
+            profileComplete: { type: Boolean, default: false },
+            documentsUploaded: { type: Boolean, default: false },
+            policiesAcknowledged: { type: Boolean, default: false }
+        }
     }
 }, { timestamps: true });
 

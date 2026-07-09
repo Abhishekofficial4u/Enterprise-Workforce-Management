@@ -32,6 +32,7 @@ import AiAssistant from './features/ai/AiAssistant';
 import AnnouncementsManager from './features/employees/components/AnnouncementsManager';
 import TrainingManager from './features/hr/components/TrainingManager';
 import LearningPortal from './features/employees/components/LearningPortal';
+import Settings from './features/settings/Settings';
 
 // Guard: redirect to login if no token
 const PrivateRoute = ({ children }) => {
@@ -112,6 +113,7 @@ function App() {
                 <Route path="/admin/dashboard/payroll" element={<PermWrap perms={['manage_payroll']}><AdminLayout><Payroll /></AdminLayout></PermWrap>} />
                 <Route path="/admin/dashboard/projects" element={<PermWrap perms={['manage_projects']}><AdminLayout><ProjectsHome /></AdminLayout></PermWrap>} />
                 <Route path="/admin/dashboard/profile" element={<PermWrap perms={[]}><AdminLayout><Profile /></AdminLayout></PermWrap>} />
+                <Route path="/admin/dashboard/settings" element={<PermWrap perms={[]}><AdminLayout><Settings /></AdminLayout></PermWrap>} />
 
                 {/* ======================= */}
                 {/* 2. HR PORTAL ROUTES     */}

@@ -17,6 +17,7 @@ import { usePermissions } from '../hooks/usePermissions';
 const adminNavItems = [
     { section: 'Admin Overview', items: [
         { label: 'System Dashboard', icon: LayoutDashboard, path: '/admin/dashboard' },
+        { label: 'System Settings', icon: Settings, path: '/admin/dashboard/settings' },
     ]},
     { section: 'Security & Access', items: [
         { label: 'Credentials Vault', icon: Key, path: '/admin/dashboard/vault' },
