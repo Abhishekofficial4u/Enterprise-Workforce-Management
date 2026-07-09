@@ -77,9 +77,14 @@ exports.getEmployees = async (req, res) => {
     try {
         let query = {};
         const permissions = req.user.permissions || [];
+        const userRole = req.user.role;
+        
+        const canViewAll = permissions.includes('view_all_data') || 
+                           permissions.includes('manage_employees') || 
+                           userRole === 'FINANCE';
         
         // If user does not have global view permissions, but has view_team
-        if (!permissions.includes('view_all_data') && !permissions.includes('manage_employees')) {
+        if (!canViewAll) {
             if (permissions.includes('view_team')) {
                 query.manager = req.user.employeeId;
             } else {
