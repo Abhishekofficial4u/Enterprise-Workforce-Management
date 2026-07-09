@@ -70,20 +70,40 @@ const OrgChart = () => {
             </div>
             
             <div className="org-tree-wrapper">
-                {hierarchy.length > 0 ? (
-                    hierarchy.map(rootNode => (
-                        <Tree
-                            key={rootNode._id}
-                            lineWidth={'2px'}
-                            lineColor={'var(--border)'}
-                            lineBorderRadius={'10px'}
-                            lineHeight={'30px'}
-                            nodePadding={'5px'}
-                            label={<StyledNode node={rootNode} onNodeClick={setSelectedEmployee} />}
-                        >
-                            {rootNode.children && rootNode.children.length > 0 && renderTreeNodes(rootNode.children, setSelectedEmployee)}
-                        </Tree>
-                    ))
+                {hierarchy.length === 1 ? (
+                    <Tree
+                        lineWidth={'2px'}
+                        lineColor={'var(--border)'}
+                        lineBorderRadius={'10px'}
+                        lineHeight={'30px'}
+                        nodePadding={'5px'}
+                        label={<StyledNode node={hierarchy[0]} onNodeClick={setSelectedEmployee} />}
+                    >
+                        {hierarchy[0].children && hierarchy[0].children.length > 0 && renderTreeNodes(hierarchy[0].children, setSelectedEmployee)}
+                    </Tree>
+                ) : hierarchy.length > 1 ? (
+                    <Tree
+                        lineWidth={'2px'}
+                        lineColor={'var(--border)'}
+                        lineBorderRadius={'10px'}
+                        lineHeight={'30px'}
+                        nodePadding={'5px'}
+                        label={
+                            <div className="org-card" style={{ cursor: 'default', border: '2px solid var(--primary)' }}>
+                                <div className="org-card-header">
+                                    <div className="org-avatar" style={{ background: 'var(--primary)' }}>
+                                        <Building2 size={24} color="white" />
+                                    </div>
+                                    <div className="org-info">
+                                        <h4>Company</h4>
+                                        <p>Top Level Organization</p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    >
+                        {renderTreeNodes(hierarchy, setSelectedEmployee)}
+                    </Tree>
                 ) : (
                     <div className="empty-state">No organization data found.</div>
                 )}
